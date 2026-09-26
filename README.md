@@ -2,7 +2,7 @@
 
 Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG pixel art de aventura y magia mediante una GAN entrenada por el equipo.
 
-> **Estado actual:** fase 2 completada. El dataset está construido y auditado; la GAN todavía no se ha entrenado y no existe una galería final.
+> **Estado actual:** fase 3 completada. El dataset y la DCGAN están validados mediante un smoke test; todavía no se ejecutaron los entrenamientos completos de 60 épocas ni existe una galería final.
 
 ## Resultado de esta fase
 
@@ -18,6 +18,9 @@ Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG p
 | Ocupación media | 23.18% |
 | Capas LPC acreditadas | 254 / 254 |
 | Lote validado | `[64, 3, 64, 64]`, `float32`, `[-1, 1]` |
+| Parámetros G / D | 3,806,080 / 2,765,568 |
+| Smoke test | 8 pasos, 64 imágenes, aprobado |
+| Checkpoint recargado | Error máximo absoluto 0 |
 
 El conjunto usa una pose frontal consistente, fondo obsidiana y combinaciones de armadura, ropa, cabello, sombreros, tonos y armas acordes con el universo. La construcción usa semilla `2026`, deduplicación SHA-256 y manifiesto por imagen.
 
@@ -79,14 +82,35 @@ Salidas principales:
 
 Los tres experimentos usarán los mismos datos, arquitectura, semilla, ruido fijo, optimizadores y 60 épocas. El diseño completo está en [`docs/PLAN_EXPERIMENTAL.md`](docs/PLAN_EXPERIMENTAL.md).
 
+## Implementación y smoke test
+
+La fase 3 incorporó:
+
+- generador DCGAN de cinco convoluciones transpuestas;
+- discriminador de cinco convoluciones con salida en logits;
+- BCE no saturante y hinge loss bajo una interfaz común;
+- normalización espectral opcional solo en D;
+- entrenamiento adversarial con métricas por paso;
+- rejillas de ruido fijo y curvas exportadas con Matplotlib;
+- checkpoints atómicos con modelos, optimizadores, ruido fijo, estados aleatorios y estado de barajado del `DataLoader`;
+- validación de guardado/recarga con salida idéntica.
+
+Para repetir el diagnóstico:
+
+```powershell
+python scripts\smoke_test_gan.py
+```
+
+El smoke test real utilizó CPU, batch 8 y ocho pasos. Todas las pérdidas fueron finitas y las tres variantes respetaron las formas esperadas. El baseline mostró dominio temprano de D (`loss_D: 1.879 → 0.153`; `loss_G: 4.970 → 7.522`), una señal que deberá monitorearse durante las primeras épocas. Es un control de integración, no una comparación de calidad.
+
+![Curvas del smoke test](artifacts/smoke_test/smoke_training_curves.png)
+
 ## Próxima fase
 
-1. Implementar generador, discriminador y pérdidas.
-2. Verificar formas, gradientes, guardado y reanudación.
-3. Ejecutar un smoke test corto del baseline.
-4. Entrenar A, B y C con el protocolo controlado.
-5. Comparar evolución fija, curvas, diversidad y vecinos cercanos.
-6. Generar 200 candidatos y seleccionar 10, declarando `10/200 = 5%`.
+1. Entrenar A, B y C durante 60 épocas con el protocolo controlado.
+2. Conservar checkpoints, métricas y ruido fijo cada cinco épocas.
+3. Comparar evolución fija, curvas, diversidad y vecinos cercanos.
+4. Generar 200 candidatos y seleccionar 10, declarando `10/200 = 5%`.
 
 ## Estructura
 
@@ -102,7 +126,11 @@ Los tres experimentos usarán los mismos datos, arquitectura, semilla, ruido fij
 ├── notebooks/01_proyecto_gan.ipynb
 ├── scripts/fetch_lpc.ps1
 ├── scripts/prepare_dataset.py
+├── scripts/smoke_test_gan.py
 ├── src/data.py
+├── src/losses.py
+├── src/models.py
+├── src/training.py
 ├── BRIEF.md
 └── requirements.txt
 ```

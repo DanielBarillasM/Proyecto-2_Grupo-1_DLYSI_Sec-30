@@ -36,7 +36,7 @@ cells = [
 Deep Learning · 2026
 
 > **Integrantes:** completar antes de entregar.  
-> **Estado:** fase 2 — dataset construido, auditado y listo para entrenamiento.  
+> **Estado:** fase 3 — DCGAN implementada y smoke test aprobado.
 > **Regla principal:** ninguna imagen final puede proceder de un generador externo.
 """
     ),
@@ -309,24 +309,133 @@ experimentos
     ),
     md(
         r"""
-## 7. Evidencias que deberá producir el entrenamiento
+## 7. Implementación DCGAN
 
-### 6.1 Rejilla de ruido fijo
+### 7.1 Generador
+
+El generador proyecta `z ∈ R¹²⁸` desde 1 × 1 hasta 64 × 64 mediante cinco convoluciones transpuestas. Los cuatro bloques internos usan BatchNorm y ReLU; la salida RGB usa `tanh`, compatible con datos normalizados a `[-1, 1]`.
+
+### 7.2 Discriminador
+
+El discriminador reduce 64 × 64 hasta un logit escalar mediante cinco convoluciones. Usa LeakyReLU 0.2 y BatchNorm desde el segundo bloque. No contiene sigmoid: BCE opera directamente sobre logits y hinge interpreta la salida como puntuación no calibrada.
+
+### 7.3 Inicialización y optimización
+
+- Convoluciones: `N(0, 0.02)`.
+- BatchNorm: pesos `N(1, 0.02)` y sesgos en cero.
+- Adam: `lr=2e-4`, `betas=(0.5, 0.999)`.
+- El experimento C aplica spectral normalization únicamente a las cinco convoluciones de D.
+"""
+    ),
+    code(
+        r"""
+from src.losses import AdversarialLoss
+from src.models import ModelDimensions, build_models, trainable_parameters
+
+dimensions = ModelDimensions(
+    latent_dim=CONFIG["training"]["latent_dim"],
+    image_channels=CONFIG["project"]["channels"],
+    generator_features=CONFIG["training"]["generator_features"],
+    discriminator_features=CONFIG["training"]["discriminator_features"],
+)
+
+generator_probe, discriminator_probe = build_models(dimensions, False, DEVICE)
+noise_probe = torch.randn(2, dimensions.latent_dim, 1, 1, device=DEVICE)
+fake_probe = generator_probe(noise_probe)
+logit_probe = discriminator_probe(fake_probe)
+
+architecture_check = {
+    "z": list(noise_probe.shape),
+    "G(z)": list(fake_probe.shape),
+    "D(G(z))": list(logit_probe.shape),
+    "G_parameters": trainable_parameters(generator_probe),
+    "D_parameters": trainable_parameters(discriminator_probe),
+    "output_min": float(fake_probe.detach().min()),
+    "output_max": float(fake_probe.detach().max()),
+}
+assert architecture_check["G(z)"] == [2, 3, 64, 64]
+assert architecture_check["D(G(z))"] == [2]
+architecture_check
+"""
+    ),
+    md(
+        r"""
+## 8. Smoke test de integración
+
+El comando siguiente ejecuta ocho actualizaciones reales del baseline, guarda ruido fijo antes/después, registra pérdidas y logits, prueba las tres variantes y verifica un checkpoint mediante guardado y recarga.
+
+```powershell
+python scripts/smoke_test_gan.py
+```
+
+Este ensayo usa solo 64 imágenes (`8 pasos × batch 8`). Su propósito es descubrir errores de integración; **no mide la calidad final ni permite elegir un experimento**.
+"""
+    ),
+    code(
+        r'''
+smoke_path = ROOT / "artifacts" / "smoke_test" / "smoke_metrics.json"
+if not smoke_path.exists():
+    raise FileNotFoundError("Ejecute primero: python scripts/smoke_test_gan.py")
+with open(smoke_path, encoding="utf-8") as file:
+    SMOKE = json.load(file)
+
+assert SMOKE["status"] == "passed"
+assert SMOKE["all_losses_finite"]
+assert SMOKE["checkpoint"]["roundtrip_max_abs_error"] == 0.0
+assert SMOKE["checkpoint"]["data_generator_restored"]
+
+display(HTML(f"""
+<div class="kpis">
+  <div class="kpi"><span>Estado</span><strong>{SMOKE['status'].upper()}</strong></div>
+  <div class="kpi"><span>Pasos</span><strong>{SMOKE['steps']}</strong></div>
+  <div class="kpi"><span>Tiempo CPU</span><strong>{SMOKE['elapsed_seconds']:.2f}s</strong></div>
+  <div class="kpi"><span>Error checkpoint</span><strong>{SMOKE['checkpoint']['roundtrip_max_abs_error']:.0f}</strong></div>
+</div>
+"""))
+
+variant_table = pd.DataFrame(SMOKE["variant_validations"]).T
+variant_table[["loss", "fake_shape", "logit_shape", "finite", "spectral_norm_layers", "loss_gradients_finite"]]
+'''
+    ),
+    code(
+        r"""
+display(IPyImage(filename=str(ROOT / "artifacts" / "smoke_test" / "fixed_noise_comparison.png"), width=1100))
+display(IPyImage(filename=str(ROOT / "artifacts" / "smoke_test" / "smoke_training_curves.png"), width=1050))
+"""
+    ),
+    md(
+        r"""
+### 8.1 Interpretación limitada al diagnóstico
+
+- Las pérdidas y logits fueron finitos en los ocho pasos; BCE, hinge y BCE + spectral normalization también produjeron gradientes finitos en sus pruebas unitarias.
+- Las tres variantes respetaron `G(z) → [2, 3, 64, 64]` y `D(x) → [2]`. La variante C confirmó spectral normalization en **5 capas**.
+- El checkpoint conservó pesos, optimizadores, ruido fijo, paso global, estados aleatorios y el generador que controla el orden del `DataLoader`; tras recargarlo, la salida tuvo error máximo absoluto **0**.
+- En el baseline, `loss_D` pasó de **1.879** a **0.153**, mientras `loss_G` pasó de **4.970** a **7.522**. El logit real final llegó a **13.809** y el falso usado por G a **−7.522**: D aprendió mucho más rápido durante este arranque.
+- La rejilla sigue siendo ruido gris tenue. Es lo esperado tras solo ocho pasos y no debe presentarse como generación de personajes.
+
+<div class="callout gold"><strong>Señal para monitorear.</strong> El dominio temprano de D no invalida el pipeline, pero sí obliga a observar la rejilla fija y los logits durante las primeras épocas. El experimento de normalización espectral ya está implementado precisamente para evaluar si reduce este comportamiento.</div>
+"""
+    ),
+    md(
+        r"""
+## 9. Evidencias que deberá producir el entrenamiento completo
+
+### 9.1 Rejilla de ruido fijo
 
 Se usarán los mismos 16 vectores en las épocas 0, 5, 10, 20, 40 y 60.
 
-### 6.2 Curvas interpretadas
+### 9.2 Curvas interpretadas
 
 Se registrarán pérdidas de G y D, logits medios sobre datos reales y falsos, y tiempo por época. Las curvas no se interpretarán como si ambas pérdidas debieran disminuir juntas.
 
-### 6.3 Vecinos más cercanos
+### 9.3 Vecinos más cercanos
 
 Cada personaje final se comparará contra todas las imágenes de entrenamiento mediante embeddings de ResNet18 y similitud coseno, con MSE en píxeles como comprobación secundaria.
 """
     ),
     md(
         r"""
-## 8. Protocolo de galería
+## 10. Protocolo de galería
 
 1. Generar 200 candidatos con semilla `20261011`.
 2. Eliminar resultados técnicamente degenerados mediante reglas declaradas.
@@ -340,16 +449,14 @@ Los nombres y clases de personaje se agregarán después de la selección como t
     ),
     md(
         r"""
-## 9. Estado y siguiente fase
+## 11. Estado y siguiente fase
 
-<div class="callout magic"><strong>Fase 2 completada.</strong> Universo, protocolo experimental y dataset de 4,096 sprites están definidos; la auditoría no encontró faltantes ni duplicados y el DataLoader quedó validado. Aún no se ha entrenado ninguna GAN ni se ha seleccionado una galería final.</div>
+<div class="callout magic"><strong>Fase 3 completada.</strong> Generador, discriminador, BCE, hinge, normalización espectral, ciclo adversarial y checkpoints reanudables están implementados. El smoke test aprobó en CPU. Aún no se ha realizado el entrenamiento de 60 épocas ni existe una galería final.</div>
 
 ### Siguiente fase
 
-- implementar generador, discriminador y funciones de pérdida;
-- verificar formas, gradientes y checkpoint/reanudación;
-- ejecutar un smoke test corto del baseline;
 - entrenar los tres experimentos controlados;
+- conservar rejillas de ruido fijo y métricas por época;
 - comparar resultados y producir la galería con vecinos cercanos.
 
 ### Referencias metodológicas

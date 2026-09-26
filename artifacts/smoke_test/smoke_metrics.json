@@ -1,0 +1,95 @@
+{
+  "status": "passed",
+  "scope": "smoke_test_not_full_training",
+  "device": "cpu",
+  "torch_version": "2.13.0+cpu",
+  "steps": 8,
+  "batch_size": 8,
+  "images_seen": 64,
+  "elapsed_seconds": 3.276291999965906,
+  "generator_parameters": 3806080,
+  "discriminator_parameters": 2765568,
+  "initial": {
+    "step": 1.0,
+    "loss_d": 1.8790348768234253,
+    "loss_g": 4.96964168548584,
+    "real_logit": -0.7691917419433594,
+    "fake_logit_d": -0.28904005885124207,
+    "fake_logit_g": -4.960554599761963,
+    "elapsed_seconds": 0.4834322000388056
+  },
+  "final": {
+    "step": 8.0,
+    "loss_d": 0.1531212031841278,
+    "loss_g": 7.522467136383057,
+    "real_logit": 13.809245109558105,
+    "fake_logit_d": -2.294883966445923,
+    "fake_logit_g": -7.5216965675354,
+    "elapsed_seconds": 3.2653977998998016
+  },
+  "all_losses_finite": true,
+  "fixed_output_before": {
+    "min": -0.025613203644752502,
+    "max": 0.018972907215356827,
+    "std": 0.004297024104744196
+  },
+  "fixed_output_after": {
+    "min": -0.10156019777059555,
+    "max": 0.07830557227134705,
+    "std": 0.01920429989695549
+  },
+  "checkpoint": {
+    "path": "checkpoints/smoke_test/baseline_bce_smoke.pt",
+    "epoch": 0,
+    "global_step": 8,
+    "roundtrip_max_abs_error": 0.0,
+    "data_generator_restored": true
+  },
+  "variant_validations": {
+    "baseline_bce": {
+      "fake_shape": [
+        2,
+        3,
+        64,
+        64
+      ],
+      "logit_shape": [
+        2
+      ],
+      "finite": true,
+      "loss": "bce_non_saturating",
+      "spectral_norm_layers": 0,
+      "loss_gradients_finite": true
+    },
+    "hinge_loss": {
+      "fake_shape": [
+        2,
+        3,
+        64,
+        64
+      ],
+      "logit_shape": [
+        2
+      ],
+      "finite": true,
+      "loss": "hinge",
+      "spectral_norm_layers": 0,
+      "loss_gradients_finite": true
+    },
+    "bce_spectral_norm": {
+      "fake_shape": [
+        2,
+        3,
+        64,
+        64
+      ],
+      "logit_shape": [
+        2
+      ],
+      "finite": true,
+      "loss": "bce_non_saturating",
+      "spectral_norm_layers": 5,
+      "loss_gradients_finite": true
+    }
+  }
+}

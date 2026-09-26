@@ -18,6 +18,8 @@ El repositorio LPC incluye arte bajo varias licencias abiertas. Se conservará `
 
 ## Arquitectura base
 
+> **Estado de implementación:** completado y validado mediante smoke test de ocho pasos. El ensayo verifica integración y reanudación; no sustituye el entrenamiento de 60 épocas.
+
 ### Generador
 
 - Vector latente: 128 dimensiones.
@@ -121,3 +123,14 @@ No se elegirá por una sola pérdida. Se considerarán conjuntamente:
 - **Interrupción de Colab:** checkpoints cada cinco épocas y reanudación completa del optimizador.
 - **Licencias mixtas:** conservar créditos por capa y no presentar el material como propietario.
 
+## Verificación de fase 3
+
+- Formas verificadas: `z=[B,128,1,1]`, `G(z)=[B,3,64,64]`, `D(x)=[B]`.
+- Parámetros entrenables: 3,806,080 en G y 2,765,568 en D.
+- BCE y hinge: pérdidas y gradientes finitos.
+- Normalización espectral: activa en las cinco convoluciones de D solo para el experimento C.
+- Checkpoint: modelos, optimizadores, ruido fijo, época, paso, estados aleatorios y estado del generador que controla el orden del `DataLoader`.
+- Round-trip del checkpoint: error máximo absoluto 0 en ruido fijo.
+- Smoke test baseline: ocho pasos, batch 8, 64 imágenes vistas.
+
+El smoke test mostró dominio temprano del discriminador: `loss_D` cayó de 1.879 a 0.153 y `loss_G` subió de 4.970 a 7.522. Esta observación no decide el modelo final, pero define una señal que debe vigilarse en las primeras épocas de los tres experimentos.
