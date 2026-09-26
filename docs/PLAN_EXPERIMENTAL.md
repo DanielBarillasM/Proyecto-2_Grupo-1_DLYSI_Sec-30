@@ -18,7 +18,7 @@ El repositorio LPC incluye arte bajo varias licencias abiertas. Se conservará `
 
 ## Arquitectura base
 
-> **Estado de implementación:** completado y validado mediante smoke test de ocho pasos. El ensayo verifica integración y reanudación; no sustituye el entrenamiento de 60 épocas.
+> **Estado de implementación:** arquitectura y ciclo completados; fase 4 en ejecución. A, B y C alcanzaron 1 de 60 épocas con checkpoints reanudables. El smoke test y la primera época verifican integración, pero todavía no permiten seleccionar un modelo.
 
 ### Generador
 
@@ -134,3 +134,15 @@ No se elegirá por una sola pérdida. Se considerarán conjuntamente:
 - Smoke test baseline: ocho pasos, batch 8, 64 imágenes vistas.
 
 El smoke test mostró dominio temprano del discriminador: `loss_D` cayó de 1.879 a 0.153 y `loss_G` subió de 4.970 a 7.522. Esta observación no decide el modelo final, pero define una señal que debe vigilarse en las primeras épocas de los tres experimentos.
+
+## Avance verificable de fase 4
+
+Los tres experimentos ejecutaron una época completa sobre las 4,096 imágenes (`64 pasos × batch 64`) con las semillas y el ruido fijo pre-registrados.
+
+| Experimento | Épocas | loss D | loss G | Logit real | Logit falso para G | Distancia fija media |
+|---|---:|---:|---:|---:|---:|---:|
+| `baseline_bce` | 1 / 60 | 0.115594 | 8.547736 | 8.165656 | −8.545664 | 0.055057 |
+| `hinge_loss` | 1 / 60 | 0.248229 | 15.257540 | 8.443574 | −15.257540 | 0.086031 |
+| `bce_spectral_norm` | 1 / 60 | 0.076024 | 6.862513 | 5.998485 | −6.858795 | 0.061835 |
+
+Las pérdidas de BCE y hinge no se comparan directamente por su distinta escala. A esta altura, las tres rejillas siguen dominadas por textura de alta frecuencia y no muestran personajes reconocibles. La corrida local medida requiere cerca de 9.4 horas adicionales de CPU; `scripts/train_all.py` puede reanudar desde la época 2 sin reiniciar modelos, optimizadores, ruido fijo ni el orden de datos.

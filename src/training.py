@@ -197,6 +197,78 @@ def save_training_curves(history: list[dict[str, float]], output_path: str | Pat
     plt.close(fig)
 
 
+def fixed_sample_diagnostics(images: torch.Tensor) -> dict[str, float]:
+    """Resume rango, dispersión y diversidad del mismo ruido fijo."""
+
+    flat = images.detach().float().cpu().flatten(1)
+    distances = torch.pdist(flat, p=2).div(flat.shape[1] ** 0.5)
+    return {
+        "fixed_min": float(images.min()),
+        "fixed_max": float(images.max()),
+        "fixed_mean": float(images.mean()),
+        "fixed_std": float(images.std()),
+        "fixed_pairwise_l2": float(distances.mean()) if len(distances) else 0.0,
+    }
+
+
+def save_experiment_curves(history: list[dict[str, float]], output_path: str | Path) -> None:
+    """Exporta pérdidas, logits y diversidad agregados por época."""
+
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    epochs = [int(row["epoch"]) for row in history]
+    fig, axes = plt.subplots(1, 3, figsize=(16, 4.7), constrained_layout=True)
+    axes[0].plot(epochs, [row["loss_d"] for row in history], label="D", color="#4A4E8F")
+    axes[0].plot(epochs, [row["loss_g"] for row in history], label="G", color="#D6A34A")
+    axes[0].set(title="Pérdidas medias", xlabel="Época", ylabel="Pérdida")
+    axes[0].legend(frameon=False)
+    axes[1].plot(epochs, [row["real_logit"] for row in history], label="D(x)", color="#79A879")
+    axes[1].plot(epochs, [row["fake_logit_d"] for row in history], label="D(G(z)) · D", color="#A490C2")
+    axes[1].plot(epochs, [row["fake_logit_g"] for row in history], label="D(G(z)) · G", color="#4FC3C8")
+    axes[1].axhline(0, color="#171A24", lw=0.8, alpha=0.5)
+    axes[1].set(title="Logits medios", xlabel="Época", ylabel="Logit")
+    axes[1].legend(frameon=False, fontsize=8)
+    axes[2].plot(
+        epochs,
+        [row["fixed_pairwise_l2"] for row in history],
+        color="#4FC3C8",
+        marker="o",
+        markersize=3,
+    )
+    axes[2].set(title="Diversidad sobre ruido fijo", xlabel="Época", ylabel="L2 media / √p")
+    for axis in axes:
+        axis.grid(alpha=0.18)
+        axis.spines[["top", "right"]].set_visible(False)
+    fig.savefig(output, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+
+def save_generator_snapshot(
+    path: str | Path,
+    generator: nn.Module,
+    experiment: dict[str, Any],
+    epoch: int,
+    global_step: int,
+    fixed_noise_seed: int,
+) -> None:
+    """Guarda un hito ligero de G; el checkpoint completo se mantiene como rolling latest."""
+
+    output = Path(path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema_version": 1,
+        "kind": "generator_snapshot",
+        "experiment": experiment,
+        "epoch": epoch,
+        "global_step": global_step,
+        "fixed_noise_seed": fixed_noise_seed,
+        "generator": generator.state_dict(),
+    }
+    temporary = output.with_suffix(output.suffix + ".tmp")
+    torch.save(payload, temporary)
+    temporary.replace(output)
+
+
 def save_checkpoint(
     path: str | Path,
     generator: nn.Module,

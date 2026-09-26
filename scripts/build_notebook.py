@@ -36,7 +36,7 @@ cells = [
 Deep Learning · 2026
 
 > **Integrantes:** completar antes de entregar.  
-> **Estado:** fase 3 — DCGAN implementada y smoke test aprobado.
+> **Estado:** fase 4 en ejecución — A, B y C completaron 1 de 60 épocas.
 > **Regla principal:** ninguna imagen final puede proceder de un generador externo.
 """
     ),
@@ -418,24 +418,96 @@ display(IPyImage(filename=str(ROOT / "artifacts" / "smoke_test" / "smoke_trainin
     ),
     md(
         r"""
-## 9. Evidencias que deberá producir el entrenamiento completo
+## 9. Avance real de la fase 4
 
-### 9.1 Rejilla de ruido fijo
+Los tres experimentos ya procesaron una época completa sobre las 4,096 imágenes (`64 pasos × batch 64`). Se conservaron el checkpoint reanudable, las métricas por paso y época, y la rejilla del mismo ruido fijo.
+
+<div class="callout gold"><strong>Lectura correcta.</strong> Una época verifica que el protocolo completo funciona, pero no permite seleccionar el mejor modelo. Además, BCE y hinge tienen escalas de pérdida distintas, por lo que sus valores no deben compararse como si fueran una misma métrica.</div>
+"""
+    ),
+    code(
+        r'''
+comparison_path = ROOT / "artifacts" / "experiments" / "comparison_summary.csv"
+status_path = ROOT / "artifacts" / "experiments" / "comparison_status.json"
+if not comparison_path.exists() or not status_path.exists():
+    raise FileNotFoundError("Ejecute primero los experimentos y scripts/compare_experiments.py")
+
+phase4_summary = pd.read_csv(comparison_path)
+with open(status_path, encoding="utf-8") as file:
+    PHASE4_STATUS = json.load(file)
+
+expected = {"baseline_bce", "hinge_loss", "bce_spectral_norm"}
+assert set(phase4_summary["experiment"]) == expected
+assert (phase4_summary["completed_epochs"] >= 1).all()
+
+display(phase4_summary[[
+    "experiment", "completed_epochs", "loss_d", "loss_g", "real_logit",
+    "fake_logit_g", "fixed_pairwise_l2", "mean_epoch_seconds"
+]].style.format({
+    "loss_d": "{:.4f}", "loss_g": "{:.4f}", "real_logit": "{:.4f}",
+    "fake_logit_g": "{:.4f}", "fixed_pairwise_l2": "{:.4f}",
+    "mean_epoch_seconds": "{:.1f}"
+}).hide(axis="index"))
+
+display(HTML(f"""
+<div class="kpis">
+  <div class="kpi"><span>Experimentos iniciados</span><strong>{PHASE4_STATUS['experiments_available']} / 3</strong></div>
+  <div class="kpi"><span>Progreso por corrida</span><strong>1 / {PHASE4_STATUS['target_epochs']}</strong></div>
+  <div class="kpi"><span>Cómputo CPU restante</span><strong>≈ {PHASE4_STATUS['estimated_remaining_cpu_hours']:.1f} h</strong></div>
+  <div class="kpi"><span>Selección final</span><strong>Pendiente</strong></div>
+</div>
+"""))
+'''
+    ),
+    code(
+        r'''
+display(IPyImage(
+    filename=str(ROOT / "artifacts" / "experiments" / "latest_fixed_noise_comparison.png"),
+    width=1150,
+))
+display(IPyImage(
+    filename=str(ROOT / "artifacts" / "experiments" / "experiment_comparison.png"),
+    width=1050,
+))
+'''
+    ),
+    md(
+        r"""
+### 9.1 Interpretación provisional
+
+- Las tres corridas terminaron la época 1 con métricas finitas y checkpoint válido.
+- El discriminador ya separa con fuerza datos reales y falsos en las tres variantes; es una señal de desbalance temprano que debe seguirse en las rejillas y logits.
+- `hinge_loss` presenta la mayor distancia media entre muestras del ruido fijo (**0.0860**), pero este único dato todavía no demuestra mejor diversidad.
+- Las rejillas continúan dominadas por textura de alta frecuencia y no contienen personajes reconocibles. Presentarlas como resultado final sería incorrecto.
+- Las épocas medidas tomaron entre 184 y 205 segundos en CPU; completar las 59 restantes de cada corrida requiere aproximadamente 9.4 horas en este equipo.
+
+La reanudación secuencial se ejecuta con:
+
+```powershell
+python scripts\train_all.py --epochs 60 --device auto
+```
+"""
+    ),
+    md(
+        r"""
+## 10. Evidencias que deberá completar el entrenamiento
+
+### 10.1 Rejilla de ruido fijo
 
 Se usarán los mismos 16 vectores en las épocas 0, 5, 10, 20, 40 y 60.
 
-### 9.2 Curvas interpretadas
+### 10.2 Curvas interpretadas
 
 Se registrarán pérdidas de G y D, logits medios sobre datos reales y falsos, y tiempo por época. Las curvas no se interpretarán como si ambas pérdidas debieran disminuir juntas.
 
-### 9.3 Vecinos más cercanos
+### 10.3 Vecinos más cercanos
 
 Cada personaje final se comparará contra todas las imágenes de entrenamiento mediante embeddings de ResNet18 y similitud coseno, con MSE en píxeles como comprobación secundaria.
 """
     ),
     md(
         r"""
-## 10. Protocolo de galería
+## 11. Protocolo de galería
 
 1. Generar 200 candidatos con semilla `20261011`.
 2. Eliminar resultados técnicamente degenerados mediante reglas declaradas.
@@ -449,13 +521,13 @@ Los nombres y clases de personaje se agregarán después de la selección como t
     ),
     md(
         r"""
-## 11. Estado y siguiente fase
+## 12. Estado y siguiente fase
 
-<div class="callout magic"><strong>Fase 3 completada.</strong> Generador, discriminador, BCE, hinge, normalización espectral, ciclo adversarial y checkpoints reanudables están implementados. El smoke test aprobó en CPU. Aún no se ha realizado el entrenamiento de 60 épocas ni existe una galería final.</div>
+<div class="callout magic"><strong>Fase 4 iniciada y reanudable.</strong> Los tres experimentos completaron 1 de 60 épocas reales con el protocolo controlado. Los resultados son provisionales: todavía no existe un modelo seleccionado ni una galería final.</div>
 
 ### Siguiente fase
 
-- entrenar los tres experimentos controlados;
+- reanudar los tres experimentos desde la época 2 hasta la 60;
 - conservar rejillas de ruido fijo y métricas por época;
 - comparar resultados y producir la galería con vecinos cercanos.
 
