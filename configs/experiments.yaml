@@ -1,0 +1,37 @@
+project:
+  name: "Eryndor: Guardianes del Velo"
+  image_size: 64
+  channels: 3
+  dataset_size: 4096
+  dataset_seed: 2026
+
+training:
+  latent_dim: 128
+  batch_size: 64
+  epochs: 60
+  learning_rate_g: 0.0002
+  learning_rate_d: 0.0002
+  beta1: 0.5
+  beta2: 0.999
+  model_seed: 42
+  fixed_noise_seed: 777
+  checkpoint_every: 5
+  sample_every: 5
+
+gallery:
+  candidate_count: 200
+  final_count: 10
+  seed: 20261011
+  selection_rate: 0.05
+
+experiments:
+  - id: baseline_bce
+    loss: bce_non_saturating
+    spectral_norm_discriminator: false
+  - id: hinge_loss
+    loss: hinge
+    spectral_norm_discriminator: false
+  - id: bce_spectral_norm
+    loss: bce_non_saturating
+    spectral_norm_discriminator: true
+

@@ -216,3 +216,25 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Proyecto 2 - artefactos locales y pesados
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+checkpoints/*
+!checkpoints/.gitkeep
+
+artifacts/fixed_noise/*
+artifacts/curves/*
+artifacts/nearest_neighbors/*
+artifacts/metrics/*
+!artifacts/fixed_noise/.gitkeep
+!artifacts/curves/.gitkeep
+!artifacts/nearest_neighbors/.gitkeep
+!artifacts/metrics/.gitkeep
+
+*.pt
+*.pth
+*.ckpt
