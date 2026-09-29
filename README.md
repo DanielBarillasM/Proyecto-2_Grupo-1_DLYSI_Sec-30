@@ -2,7 +2,7 @@
 
 Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG pixel art de aventura y magia mediante una GAN entrenada por el equipo.
 
-> **Estado actual:** fase 5 implementada con bloqueo seguro. El pipeline de galería, vecinos cercanos y regeneración está listo, pero no producirá una entrega falsa mientras los tres experimentos permanezcan en 1 de 60 épocas.
+> **Estado actual:** fase 6 implementada. La presentación regenerable de 12 diapositivas ya compila y pasa la revisión técnica y visual. El pipeline mantiene la galería, los vecinos y la reflexión final como evidencia pendiente mientras los tres experimentos permanezcan en 1 de 60 épocas.
 
 ## Resultado de esta fase
 
@@ -24,6 +24,7 @@ Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG p
 | Entrenamiento A / B / C | 1 / 1 / 1 épocas de 60 |
 | Pipeline de selección | Smoke test sintético aprobado |
 | Galería final válida | Pendiente de checkpoints de 60 épocas |
+| Presentación PDF | 12 páginas, validación automática aprobada |
 
 El conjunto usa una pose frontal consistente, fondo obsidiana y combinaciones de armadura, ropa, cabello, sombreros, tonos y armas acordes con el universo. La construcción usa semilla `2026`, deduplicación SHA-256 y manifiesto por imagen.
 
@@ -170,13 +171,27 @@ La primera ejecución final descargará una vez los pesos oficiales de ResNet18 
 
 > **Resultado actual honesto:** el smoke test usa datos sintéticos únicamente para validar filtrado, vecinos y selección. No crea imágenes en `galeria/` y no constituye evidencia de calidad de la GAN.
 
+## Fase 6: presentación regenerable
+
+[`presentation/presentacion.pdf`](presentation/presentacion.pdf) funciona como informe visual del proyecto y respeta el máximo de 12 diapositivas. Sigue el tema **Midnight Galaxy**, incorpora la matriz de evidencias exigida y cubre universo, datos, arquitectura, hipótesis A/B/C, ruido fijo, curvas, fallos, galería, vecinos, conclusiones y reflexión.
+
+La presentación no contiene métricas escritas a mano: [`scripts/build_presentation.py`](scripts/build_presentation.py) lee los artefactos vigentes, genera `presentation/generated_results.tex`, compila con XeLaTeX y comprueba el número de páginas, el formato 16:9 y la presencia de texto. Mientras no existan checkpoints completos y una galería validada, las diapositivas 9, 10 y parte de la 11 muestran explícitamente **evidencia pendiente**.
+
+Para regenerarla:
+
+```powershell
+python scripts\build_presentation.py
+```
+
+El resultado de la última validación queda en `artifacts/presentation/build_status.json`. La tipografía GNU FreeSans se incluye con su licencia para que la apariencia sea reproducible.
+
 ## Trabajo pendiente antes de la entrega
 
 1. Reanudar A, B y C desde la época 2 y llegar a 60 con el protocolo controlado.
 2. Conservar checkpoints, métricas y ruido fijo cada cinco épocas.
 3. Comparar evolución fija y curvas para seleccionar el modelo final.
 4. Ejecutar y validar la galería 10/200 con vecinos cercanos.
-5. Construir la presentación PDF de máximo 12 diapositivas y su matriz de evidencias.
+5. Regenerar la presentación después de validar la galería; el contenido final se actualizará automáticamente.
 
 ## Estructura
 
@@ -190,6 +205,7 @@ La primera ejecución final descargará una vez los pesos oficiales de ResNet18 
 ├── docs/                    # Plan, tema y atribuciones
 ├── galeria/                 # Diez salidas finales de la GAN
 ├── notebooks/01_proyecto_gan.ipynb
+├── presentation/            # Fuente LaTeX, tipografía y PDF de 12 diapositivas
 ├── scripts/fetch_lpc.ps1
 ├── scripts/prepare_dataset.py
 ├── scripts/smoke_test_gan.py
@@ -199,6 +215,7 @@ La primera ejecución final descargará una vez los pesos oficiales de ResNet18 
 ├── scripts/check_phase5_readiness.py
 ├── scripts/smoke_test_evaluation.py
 ├── scripts/build_gallery.py
+├── scripts/build_presentation.py
 ├── scripts/validate_gallery.py
 ├── src/data.py
 ├── src/evaluation.py

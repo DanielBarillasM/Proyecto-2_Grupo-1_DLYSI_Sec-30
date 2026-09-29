@@ -238,3 +238,11 @@ artifacts/metrics/*
 *.pt
 *.pth
 *.ckpt
+
+# Salidas auxiliares de LaTeX; el PDF final sí se versiona
+presentation/*.aux
+presentation/*.log
+presentation/*.out
+presentation/*.toc
+presentation/*.synctex.gz
+presentation/*.xdv
