@@ -30,6 +30,9 @@ gallery:
   final_count: 10
   seed: 20261011
   selection_rate: 0.05
+  feature_extractor: "resnet18_imagenet1k_v1"
+  generation_device: "cpu"
+  background_rgb: [23, 26, 36]
 
 experiments:
   - id: baseline_bce

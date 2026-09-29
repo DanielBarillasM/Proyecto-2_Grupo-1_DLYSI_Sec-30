@@ -1,0 +1,43 @@
+{
+  "status": "passed",
+  "candidates": 20,
+  "eligible": 20,
+  "selected": [
+    5,
+    2,
+    19,
+    12,
+    17,
+    7,
+    0,
+    1,
+    6,
+    8
+  ],
+  "foreground_range": [
+    0.18017578125,
+    0.240234375
+  ],
+  "contrast_range": [
+    0.17066696286201477,
+    0.19121475517749786
+  ],
+  "nearest_similarity_range": [
+    0.2680901288986206,
+    0.5081740617752075
+  ],
+  "selection_diversity": [
+    1.0,
+    1.3096740245819092,
+    1.1949100494384766,
+    1.058029294013977,
+    1.0256022214889526,
+    0.924133837223053,
+    0.9640897512435913,
+    0.8424865007400513,
+    0.7481851577758789,
+    0.777733564376831
+  ],
+  "deterministic_generation": true,
+  "note": "Datos sintéticos; no son resultados ni imágenes de la galería final."
+}

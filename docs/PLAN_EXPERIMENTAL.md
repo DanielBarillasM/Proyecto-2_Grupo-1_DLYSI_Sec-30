@@ -18,7 +18,7 @@ El repositorio LPC incluye arte bajo varias licencias abiertas. Se conservará `
 
 ## Arquitectura base
 
-> **Estado de implementación:** arquitectura y ciclo completados; fase 4 en ejecución. A, B y C alcanzaron 1 de 60 épocas con checkpoints reanudables. El smoke test y la primera época verifican integración, pero todavía no permiten seleccionar un modelo.
+> **Estado de implementación:** arquitectura y ciclo completados; fase 4 en 1/60 y pipeline de fase 5 implementado con bloqueo seguro. Todavía no es válido seleccionar un modelo ni producir la galería final.
 
 ### Generador
 
@@ -146,3 +146,28 @@ Los tres experimentos ejecutaron una época completa sobre las 4,096 imágenes (
 | `bce_spectral_norm` | 1 / 60 | 0.076024 | 6.862513 | 5.998485 | −6.858795 | 0.061835 |
 
 Las pérdidas de BCE y hinge no se comparan directamente por su distinta escala. A esta altura, las tres rejillas siguen dominadas por textura de alta frecuencia y no muestran personajes reconocibles. La corrida local medida requiere cerca de 9.4 horas adicionales de CPU; `scripts/train_all.py` puede reanudar desde la época 2 sin reiniciar modelos, optimizadores, ruido fijo ni el orden de datos.
+
+## Implementación de fase 5
+
+La generación y auditoría de la galería quedó implementada con una precondición no negociable: el checkpoint elegido debe haber alcanzado las 60 épocas registradas. Si no se cumple, `build_gallery.py` termina antes de escribir PNG en `galeria/`.
+
+### Flujo de selección
+
+1. Generar 200 candidatos en CPU con semilla `20261011` y guardar los vectores latentes.
+2. Derivar límites técnicos de ocupación y contraste desde la distribución real del dataset.
+3. Extraer embeddings de candidatos y entrenamiento con ResNet18 preentrenada sin su capa final.
+4. Buscar el vecino real de máxima similitud coseno y calcular MSE en píxeles.
+5. Filtrar resultados degenerados y aplicar una selección greedy de 10 imágenes que combine:
+   - distancia al vecino real;
+   - calidad técnica respecto al dataset;
+   - distancia mínima respecto a personajes ya seleccionados.
+6. Guardar `manifest.csv`, `latents.npz`, procedencia, rejilla final y figura lado a lado de vecinos.
+7. Regenerar los diez PNG desde el checkpoint y exigir una diferencia máxima de cero niveles RGB.
+
+### Estado verificable
+
+- Prueba sintética de filtrado, vecinos y selección: aprobada.
+- Checkpoints A/B/C: 1/60, por lo que la galería final permanece correctamente vacía.
+- Pesos ResNet18: se descargarán desde la URL oficial de PyTorch en la primera ejecución final; no se permiten pesos aleatorios como sustituto.
+- Tasa de selección que se declarará: `10/200 = 5%`.
+- Nombres y roles: asignados después de la selección para optar a la bonificación, sin intervenir en la métrica técnica.

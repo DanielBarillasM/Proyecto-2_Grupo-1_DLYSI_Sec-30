@@ -1,0 +1,27 @@
+{
+  "status": "blocked",
+  "target_epochs": 60,
+  "completed_epochs": {
+    "baseline_bce": 1,
+    "hinge_loss": 1,
+    "bce_spectral_norm": 1
+  },
+  "checkpoints_present": {
+    "baseline_bce": true,
+    "hinge_loss": true,
+    "bce_spectral_norm": true
+  },
+  "resnet18_weights": {
+    "url": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
+    "cache_file": "resnet18-f37072fd.pth",
+    "cached": false
+  },
+  "gallery_manifest_exists": false,
+  "blocking_reasons": [
+    "baseline_bce: 1/60 épocas",
+    "hinge_loss: 1/60 épocas",
+    "bce_spectral_norm: 1/60 épocas",
+    "pesos preentrenados ResNet18 aún no están en caché"
+  ],
+  "next_command": "python scripts/train_all.py --epochs 60 --device auto"
+}

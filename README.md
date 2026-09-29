@@ -2,7 +2,7 @@
 
 Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG pixel art de aventura y magia mediante una GAN entrenada por el equipo.
 
-> **Estado actual:** fase 4 iniciada de forma reproducible. Los tres experimentos completaron 1 de 60 épocas, guardaron métricas, ruido fijo y checkpoints reanudables. La comparación y la galería siguen siendo provisionales hasta completar las 60 épocas.
+> **Estado actual:** fase 5 implementada con bloqueo seguro. El pipeline de galería, vecinos cercanos y regeneración está listo, pero no producirá una entrega falsa mientras los tres experimentos permanezcan en 1 de 60 épocas.
 
 ## Resultado de esta fase
 
@@ -22,6 +22,8 @@ Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG p
 | Smoke test | 8 pasos, 64 imágenes, aprobado |
 | Checkpoint recargado | Error máximo absoluto 0 |
 | Entrenamiento A / B / C | 1 / 1 / 1 épocas de 60 |
+| Pipeline de selección | Smoke test sintético aprobado |
+| Galería final válida | Pendiente de checkpoints de 60 épocas |
 
 El conjunto usa una pose frontal consistente, fondo obsidiana y combinaciones de armadura, ropa, cabello, sombreros, tonos y armas acordes con el universo. La construcción usa semilla `2026`, deduplicación SHA-256 y manifiesto por imagen.
 
@@ -137,12 +139,44 @@ python scripts\compare_experiments.py
 
 El checkpoint completo se mantiene como archivo rodante para limitar el uso de disco; en las épocas 5, 10, 15, ..., 60 se conserva además una instantánea liviana del generador y su rejilla fija.
 
-## Para completar la fase 4
+## Fase 5: galería y prueba de novedad
+
+La implementación cumple el protocolo obligatorio sin presentar resultados prematuros:
+
+- exige un checkpoint de al menos 60 épocas antes de escribir `galeria/`;
+- genera exactamente 200 candidatos con semilla `20261011` y conserva sus vectores `z`;
+- deriva filtros de ocupación y contraste desde las 4,096 imágenes reales;
+- usa ResNet18 preentrenada para vecinos por similitud coseno y reporta MSE en píxeles;
+- selecciona 10 candidatos mediante novedad, calidad técnica y diversidad greedy;
+- declara `10/200 = 5%` en el manifiesto y en la procedencia;
+- guarda nombres y roles coherentes con Eryndor como trabajo creativo adicional;
+- regenera los diez PNG desde el checkpoint y exige diferencia RGB máxima igual a cero.
+
+Auditoría actual:
+
+```powershell
+python scripts\check_phase5_readiness.py
+python scripts\smoke_test_evaluation.py
+```
+
+Cuando A, B y C lleguen a 60 épocas, se compararán sus rejillas y curvas para escoger el checkpoint defendible. Después:
+
+```powershell
+python scripts\build_gallery.py --experiment <baseline_bce|hinge_loss|bce_spectral_norm>
+python scripts\validate_gallery.py
+```
+
+La primera ejecución final descargará una vez los pesos oficiales de ResNet18 si todavía no están en la caché de PyTorch. El programa nunca sustituye silenciosamente esos pesos por una red aleatoria.
+
+> **Resultado actual honesto:** el smoke test usa datos sintéticos únicamente para validar filtrado, vecinos y selección. No crea imágenes en `galeria/` y no constituye evidencia de calidad de la GAN.
+
+## Trabajo pendiente antes de la entrega
 
 1. Reanudar A, B y C desde la época 2 y llegar a 60 con el protocolo controlado.
 2. Conservar checkpoints, métricas y ruido fijo cada cinco épocas.
-3. Comparar evolución fija, curvas, diversidad y vecinos cercanos.
-4. Generar 200 candidatos y seleccionar 10, declarando `10/200 = 5%`.
+3. Comparar evolución fija y curvas para seleccionar el modelo final.
+4. Ejecutar y validar la galería 10/200 con vecinos cercanos.
+5. Construir la presentación PDF de máximo 12 diapositivas y su matriz de evidencias.
 
 ## Estructura
 
@@ -162,7 +196,12 @@ El checkpoint completo se mantiene como archivo rodante para limitar el uso de d
 ├── scripts/train_experiment.py
 ├── scripts/train_all.py
 ├── scripts/compare_experiments.py
+├── scripts/check_phase5_readiness.py
+├── scripts/smoke_test_evaluation.py
+├── scripts/build_gallery.py
+├── scripts/validate_gallery.py
 ├── src/data.py
+├── src/evaluation.py
 ├── src/losses.py
 ├── src/models.py
 ├── src/training.py

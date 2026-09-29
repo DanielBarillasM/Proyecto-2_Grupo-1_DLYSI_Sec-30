@@ -36,7 +36,7 @@ cells = [
 Deep Learning · 2026
 
 > **Integrantes:** completar antes de entregar.  
-> **Estado:** fase 4 en ejecución — A, B y C completaron 1 de 60 épocas.
+> **Estado:** fase 5 implementada con bloqueo seguro — entrenamiento aún en 1 de 60 épocas.
 > **Regla principal:** ninguna imagen final puede proceder de un generador externo.
 """
     ),
@@ -521,15 +521,80 @@ Los nombres y clases de personaje se agregarán después de la selección como t
     ),
     md(
         r"""
-## 12. Estado y siguiente fase
+## 12. Implementación de la fase 5
 
-<div class="callout magic"><strong>Fase 4 iniciada y reanudable.</strong> Los tres experimentos completaron 1 de 60 épocas reales con el protocolo controlado. Los resultados son provisionales: todavía no existe un modelo seleccionado ni una galería final.</div>
+El pipeline final ya está implementado, pero **no escribirá imágenes en `galeria/` mientras el checkpoint seleccionado tenga menos de 60 épocas**. Esta barrera evita confundir ruido temprano con personajes finales.
+
+Cuando el entrenamiento esté completo, el flujo será:
+
+1. generar exactamente 200 candidatos en CPU con semilla `20261011`;
+2. derivar límites de ocupación y contraste desde las 4,096 imágenes reales;
+3. extraer características con ResNet18 preentrenada, sin reemplazo silencioso por pesos aleatorios;
+4. localizar el vecino real con máxima similitud coseno y calcular MSE en píxeles;
+5. elegir 10 mediante una selección greedy que combina novedad, calidad técnica y separación entre elegidos;
+6. guardar PNG, `latents.npz`, `manifest.csv`, procedencia, rejilla y figura de vecinos;
+7. regenerar las diez imágenes y exigir diferencia máxima RGB igual a cero.
+"""
+    ),
+    code(
+        r'''
+readiness_path = ROOT / "artifacts" / "gallery" / "readiness.json"
+pipeline_smoke_path = ROOT / "artifacts" / "gallery" / "pipeline_smoke_test.json"
+if not readiness_path.exists() or not pipeline_smoke_path.exists():
+    raise FileNotFoundError(
+        "Ejecute scripts/check_phase5_readiness.py y scripts/smoke_test_evaluation.py"
+    )
+with open(readiness_path, encoding="utf-8") as file:
+    PHASE5 = json.load(file)
+with open(pipeline_smoke_path, encoding="utf-8") as file:
+    PHASE5_SMOKE = json.load(file)
+
+assert PHASE5_SMOKE["status"] == "passed"
+display(HTML(f"""
+<div class="kpis">
+  <div class="kpi"><span>Pipeline</span><strong>{PHASE5_SMOKE['status'].upper()}</strong></div>
+  <div class="kpi"><span>Preparación final</span><strong>{PHASE5['status'].upper()}</strong></div>
+  <div class="kpi"><span>Candidatos</span><strong>{CONFIG['gallery']['candidate_count']}</strong></div>
+  <div class="kpi"><span>Selección declarada</span><strong>10 / 200</strong></div>
+</div>
+"""))
+
+phase5_progress = pd.DataFrame([
+    {"Experimento": key, "Épocas": value, "Objetivo": PHASE5["target_epochs"]}
+    for key, value in PHASE5["completed_epochs"].items()
+])
+display(phase5_progress.style.hide(axis="index"))
+print("Bloqueos activos:")
+for reason in PHASE5["blocking_reasons"]:
+    print(f"- {reason}")
+'''
+    ),
+    md(
+        r"""
+### 12.1 Comandos finales
+
+```powershell
+python scripts\check_phase5_readiness.py
+python scripts\build_gallery.py --experiment <experimento_seleccionado>
+python scripts\validate_gallery.py
+```
+
+<div class="callout gold"><strong>Resultado actual honesto.</strong> La prueba sintética del algoritmo aprobó, pero no constituye evidencia de la GAN. La galería seguirá vacía hasta completar el entrenamiento, comparar A/B/C y seleccionar un checkpoint defendible.</div>
+"""
+    ),
+    md(
+        r"""
+## 13. Estado y siguiente fase
+
+<div class="callout magic"><strong>Fase 5 implementada, todavía no ejecutable como entrega final.</strong> El código de generación, selección, vecinos cercanos y regeneración está listo y probado de manera aislada. Los tres experimentos permanecen en 1/60, por lo que no existe aún un modelo seleccionado ni una galería válida.</div>
 
 ### Siguiente fase
 
 - reanudar los tres experimentos desde la época 2 hasta la 60;
 - conservar rejillas de ruido fijo y métricas por época;
-- comparar resultados y producir la galería con vecinos cercanos.
+- comparar A/B/C y seleccionar el modelo con evidencia visual y cuantitativa;
+- ejecutar y validar la galería 10/200 con vecinos cercanos;
+- construir la presentación PDF de máximo 12 diapositivas y su matriz de evidencias.
 
 ### Referencias metodológicas
 
