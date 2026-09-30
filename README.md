@@ -2,7 +2,7 @@
 
 Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG pixel art de aventura y magia mediante una GAN entrenada por el equipo.
 
-> **Estado actual:** fases 9 y 10 completadas con el checkpoint final de C en época 60. La auditoría ResNet18 no encontró duplicados exactos ni banderas de posible memorización; la selección real evaluó 200 candidatos y eligió 10 de forma determinista. La fase 11 queda pendiente para guardar los PNG finales, los vectores `z` y el manifiesto reproducible.
+> **Estado actual:** fases 9–11 completadas con el checkpoint final de C en época 60. La galería conserva diez PNG únicos, vectores `z`, manifiesto, procedencia y prueba de regeneración exacta; las fases 12–15 cerrarán README, notebook, presentación y auditoría integral.
 
 ## Resultado de esta fase
 
@@ -32,7 +32,7 @@ Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG p
 | Control de memorización | 0 duplicados exactos; 0 banderas de revisión |
 | Selección GAN 10/200 | 200 generados; 97 elegibles; 10 seleccionados |
 | Vecino medio de los seleccionados | Coseno 0.7563; MSE 0.02152 |
-| Galería final válida | Pendiente de persistencia y manifiesto en fase 11 |
+| Galería final válida | 10 PNG únicos; selección 10/200 coincidente; diferencia RGB 0 |
 | Presentación PDF | 12 páginas, validación automática aprobada |
 | Presentación HTML | 12 escenas, teclado, vista general y validación en navegador |
 | Entrenamiento Colab | Completado; artefactos sincronizados |
@@ -243,7 +243,7 @@ python scripts\validate_gallery.py
 
 Los pesos oficiales de ResNet18 ya están en la caché de este equipo. En un runtime nuevo de Colab se descargarán una vez; el programa nunca los sustituye silenciosamente por una red aleatoria.
 
-> **Resultado actual honesto:** además del smoke test sintético, las fases 9–10 ya contienen evidencia GAN real. La rejilla de fase 10 sigue siendo una selección técnica provisional: todavía no sustituye la galería reproducible de fase 11.
+> **Resultado actual honesto:** la galería de fase 11 fue regenerada desde el checkpoint y sus vectores `z`; los diez hashes son únicos, la selección coincide con fase 10 y la diferencia RGB máxima es cero.
 
 ## Presentación regenerable — punto 14 del plan
 
@@ -282,9 +282,8 @@ Las fases 7–10 ya terminaron. Los artefactos de métricas, muestras, vecinos y
 
 ## Trabajo pendiente antes de la entrega
 
-1. Ejecutar la fase 11: guardar los diez PNG, sus vectores `z`, manifiesto y prueba de regeneración.
-2. Cerrar los puntos 12–14: README, notebook y presentación con la galería definitiva validada.
-3. Ejecutar la matriz de evidencias y validación integral del punto 15 antes de comprimir la entrega.
+1. Cerrar los puntos 12–14: README, notebook y presentación con la galería definitiva validada.
+2. Ejecutar la matriz de evidencias y validación integral del punto 15 antes de comprimir la entrega.
 
 ## Estructura
 

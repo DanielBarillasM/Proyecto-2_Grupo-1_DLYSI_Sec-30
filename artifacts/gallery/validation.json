@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "image_count": 10,
+  "unique_image_hashes": 10,
+  "selection_rate": 0.05,
+  "checkpoint_epoch": 60,
+  "phase10_selection_match": true,
+  "regeneration_max_pixel_delta": 0,
+  "errors": []
+}

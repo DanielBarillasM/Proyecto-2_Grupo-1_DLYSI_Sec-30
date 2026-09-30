@@ -105,6 +105,15 @@ def main() -> None:
     payload = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     if int(payload["epoch"]) < target_epoch:
         raise RuntimeError("El checkpoint no corresponde a un entrenamiento final")
+    checkpoint_hash = sha256_file(checkpoint_path)
+    phase10_summary_path = ROOT / "artifacts" / "phase10" / "phase10_summary.json"
+    if not phase10_summary_path.exists():
+        raise FileNotFoundError("La fase 10 debe completarse antes de construir la galería")
+    phase10_summary = json.loads(phase10_summary_path.read_text(encoding="utf-8"))
+    if phase10_summary.get("status") != "passed":
+        raise RuntimeError("La fase 10 no está aprobada")
+    if phase10_summary.get("checkpoint_sha256") != checkpoint_hash:
+        raise RuntimeError("La fase 10 corresponde a un checkpoint distinto")
     training = config["training"]
     dimensions = ModelDimensions(
         latent_dim=int(training["latent_dim"]),
@@ -153,6 +162,13 @@ def main() -> None:
         quality_score,
         final_count,
     )
+    phase10_selected = np.asarray(
+        phase10_summary["selected_candidate_indices"], dtype=np.int64
+    )
+    if not np.array_equal(selected, phase10_selected):
+        raise RuntimeError(
+            "La selección de fase 11 no reproduce exactamente los índices de fase 10"
+        )
 
     artifact_dir = ROOT / "artifacts" / "gallery"
     gallery_dir = ROOT / "galeria"
@@ -228,8 +244,12 @@ def main() -> None:
         "source": "Generator entrenado por el equipo; sin imágenes de generadores externos.",
         "experiment": args.experiment,
         "checkpoint": checkpoint_path.relative_to(ROOT).as_posix(),
-        "checkpoint_sha256": sha256_file(checkpoint_path),
+        "checkpoint_sha256": checkpoint_hash,
         "checkpoint_epoch": int(payload["epoch"]),
+        "phase10_summary": phase10_summary_path.relative_to(ROOT).as_posix(),
+        "phase10_summary_sha256": sha256_file(phase10_summary_path),
+        "selected_candidate_indices": selected.tolist(),
+        "phase10_selection_match": True,
         "dataset_manifest_sha256": sha256_file(ROOT / "data" / "processed" / "manifest.csv"),
         "candidate_count": candidate_count,
         "selected_count": final_count,

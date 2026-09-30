@@ -18,7 +18,7 @@ El repositorio LPC incluye arte bajo varias licencias abiertas. Se conservará `
 
 ## Arquitectura base
 
-> **Estado de implementación:** puntos 1–10 completados. El checkpoint final de `bce_spectral_norm` fue verificado en época 60; la fase 9 auditó 16 muestras contra 4,096 imágenes y la fase 10 evaluó 200 candidatos reales para seleccionar 10. La fase 11 queda pendiente para persistir la galería, los vectores latentes y el manifiesto reproducible.
+> **Estado de implementación:** puntos 1–11 completados. La galería final reproduce los mismos diez índices aprobados en fase 10, conserva sus vectores latentes y supera la validación con diez hashes únicos y diferencia RGB máxima igual a cero. Los puntos 12–15 corresponden al cierre documental y a la auditoría integral.
 
 ## Ejecución de la fase 7 en Colab
 

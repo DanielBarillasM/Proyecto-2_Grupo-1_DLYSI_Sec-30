@@ -48,6 +48,30 @@ def main() -> None:
         errors.append("tasa de selección incorrecta")
     if latents["z"].shape != (expected_count, int(config["training"]["latent_dim"]), 1, 1):
         errors.append(f"forma de z incorrecta: {latents['z'].shape}")
+    manifest_indices = manifest["candidate_index"].to_numpy(dtype=np.int64)
+    latent_indices = latents["candidate_indices"].astype(np.int64)
+    if not np.array_equal(manifest_indices, latent_indices):
+        errors.append("los índices de latents.npz no coinciden con el manifiesto")
+
+    phase10_path = ROOT / str(
+        provenance.get("phase10_summary", "artifacts/phase10/phase10_summary.json")
+    )
+    phase10_selection_match = False
+    if not phase10_path.exists():
+        errors.append("falta el resumen de fase 10")
+    else:
+        phase10 = json.loads(phase10_path.read_text(encoding="utf-8"))
+        expected_phase10_hash = provenance.get("phase10_summary_sha256")
+        if expected_phase10_hash and sha256_file(phase10_path) != expected_phase10_hash:
+            errors.append("el resumen de fase 10 cambió desde la generación")
+        phase10_indices = np.asarray(
+            phase10.get("selected_candidate_indices", []), dtype=np.int64
+        )
+        phase10_selection_match = np.array_equal(manifest_indices, phase10_indices)
+        if not phase10_selection_match:
+            errors.append("la galería no reproduce la selección aprobada en fase 10")
+        if phase10.get("checkpoint_sha256") != provenance["checkpoint_sha256"]:
+            errors.append("fase 10 y galería no usan el mismo checkpoint")
 
     stored_images: list[np.ndarray] = []
     for row in manifest.itertuples(index=False):
@@ -88,6 +112,7 @@ def main() -> None:
         "unique_image_hashes": int(manifest["sha256"].nunique()) if "sha256" in manifest else 0,
         "selection_rate": expected_count / candidate_count,
         "checkpoint_epoch": int(checkpoint["epoch"]),
+        "phase10_selection_match": phase10_selection_match,
         "regeneration_max_pixel_delta": max_pixel_delta,
         "errors": errors,
     }

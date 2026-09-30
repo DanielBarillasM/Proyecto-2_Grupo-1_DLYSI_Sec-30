@@ -1,0 +1,41 @@
+{
+  "status": "validated",
+  "source": "Generator entrenado por el equipo; sin imágenes de generadores externos.",
+  "experiment": "bce_spectral_norm",
+  "checkpoint": "checkpoints/bce_spectral_norm/latest.pt",
+  "checkpoint_sha256": "b032a9fa92e719b0500e54a7ee14d5c1a691386bb32459d38807305b699b7f80",
+  "checkpoint_epoch": 60,
+  "phase10_summary": "artifacts/phase10/phase10_summary.json",
+  "phase10_summary_sha256": "c612892e247e14f1cd68c260b15bf8a918f73d04e8f7160621245597264f337b",
+  "selected_candidate_indices": [
+    100,
+    35,
+    144,
+    141,
+    114,
+    15,
+    48,
+    20,
+    0,
+    39
+  ],
+  "phase10_selection_match": true,
+  "dataset_manifest_sha256": "3d7bebe16513948df15dea6104518f66e2c15157263b57c2525243e7142c42fc",
+  "candidate_count": 200,
+  "selected_count": 10,
+  "selection_rate": 0.05,
+  "gallery_seed": 20261011,
+  "feature_extractor": "ResNet18 IMAGENET1K_V1 sin capa final",
+  "feature_weights_url": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
+  "quality_bounds": {
+    "foreground_min": 0.100615234375,
+    "foreground_max": 0.305615234375,
+    "contrast_min": 0.08687578365206718,
+    "contrast_max": 0.31936740428209304,
+    "foreground_median": 0.188720703125,
+    "contrast_median": 0.18393316864967346
+  },
+  "eligible_candidates": 97,
+  "device_for_features": "cpu",
+  "device_for_generation": "cpu"
+}
