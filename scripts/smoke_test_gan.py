@@ -189,7 +189,7 @@ def main() -> None:
     reloaded_after = generate_fixed(reloaded_g, payload["fixed_noise"].to(device))
     roundtrip_max_error = float((after - reloaded_after).abs().max())
     data_generator_restored = bool(
-        torch.equal(resumed_data_generator.get_state(), payload["data_generator_state"])
+        torch.equal(resumed_data_generator.get_state(), payload["data_generator_state"].cpu())
     )
     variants = validate_variants(dimensions, device)
 

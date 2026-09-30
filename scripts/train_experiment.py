@@ -210,6 +210,10 @@ def main() -> None:
         step_history = [row for row in step_history if int(row["epoch"]) < start_epoch]
         print(f"Reanudando {args.experiment} desde época {start_epoch}", flush=True)
     else:
+        # Sin checkpoint se inicia una corrida nueva; no se reutilizan
+        # métricas preliminares versionadas en el repositorio.
+        epoch_history = []
+        step_history = []
         noise_generator = torch.Generator(device="cpu").manual_seed(
             int(training["fixed_noise_seed"])
         )

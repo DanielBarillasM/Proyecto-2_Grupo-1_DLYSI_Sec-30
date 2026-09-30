@@ -322,13 +322,13 @@ def load_checkpoint(
     optimizer_g.load_state_dict(payload["optimizer_g"])
     optimizer_d.load_state_dict(payload["optimizer_d"])
     if restore_rng:
-        torch.set_rng_state(payload["torch_rng_state"])
+        torch.set_rng_state(payload["torch_rng_state"].cpu())
         if torch.cuda.is_available() and payload.get("cuda_rng_state_all") is not None:
-            torch.cuda.set_rng_state_all(payload["cuda_rng_state_all"])
+            torch.cuda.set_rng_state_all([state.cpu() for state in payload["cuda_rng_state_all"]])
         np.random.set_state(payload["numpy_rng_state"])
         random.setstate(payload["python_rng_state"])
     if data_generator is not None and payload.get("data_generator_state") is not None:
-        data_generator.set_state(payload["data_generator_state"])
+        data_generator.set_state(payload["data_generator_state"].cpu())
     return payload
 
 
