@@ -18,7 +18,17 @@ El repositorio LPC incluye arte bajo varias licencias abiertas. Se conservará `
 
 ## Arquitectura base
 
-> **Estado de implementación:** arquitectura y ciclo completados; fase 4 en 1/60 y pipeline de fase 5 implementado con bloqueo seguro. Todavía no es válido seleccionar un modelo ni producir la galería final.
+> **Estado de implementación:** puntos 1–6 completados; punto 7 preparado para Google Colab y corridas A/B/C en 1/60. Los puntos 9–11 tienen infraestructura adelantada con bloqueo seguro. Todavía no es válido seleccionar un modelo ni producir la galería final.
+
+## Ejecución de la fase 7 en Colab
+
+El notebook `notebooks/02_entrenamiento_colab.ipynb` ejecuta el protocolo sin modificar sus controles. Trabaja sobre el disco local del runtime y usa Google Drive como respaldo persistente mediante `--backup-root`.
+
+- `latest.pt` se guarda al finalizar cada época;
+- métricas, estado y curvas se reflejan en Drive junto con el checkpoint;
+- las instantáneas históricas del generador y las rejillas permanecen cada cinco épocas;
+- una sesión nueva restaura automáticamente el respaldo si no existe un checkpoint local;
+- A/B/C mantienen datos, semilla, arquitectura, optimizadores y ruido fijo idénticos.
 
 ### Generador
 

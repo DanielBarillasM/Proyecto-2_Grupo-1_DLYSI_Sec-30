@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Eryndor · Guardianes del Velo</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%234fc3c8' d='M32 3 58 32 32 61 6 32z'/%3E%3Cpath fill='%2311151f' d='m32 15 15 17-15 17-15-17z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/presentation.css">
+</head>
+<body>
+  <div class="mineral-fracture" aria-hidden="true"></div>
+  <header class="deck-header">
+    <a class="wordmark" href="#slide-1" aria-label="Ir a la portada">
+      <span class="wordmark-rune">E</span><span>Eryndor</span>
+    </a>
+    <div class="progress-track" aria-hidden="true"><span id="progress"></span></div>
+    <div class="header-actions">
+      <button type="button" id="overview-button" title="Vista general (O)">Vista general</button>
+      <button type="button" id="fullscreen-button" title="Pantalla completa (F)">Pantalla completa</button>
+    </div>
+  </header>
+
+  <nav class="chapter-rail" aria-label="Diapositivas">
+    <ol id="chapter-list"></ol>
+  </nav>
+
+  <main class="stage" id="stage">
+    <section class="slide cover is-active" id="slide-1" data-title="Portada" aria-hidden="false">
+      <div class="cover-field">
+        <div class="cover-copy">
+          <p class="course-line">Deep Learning 2026 / Proyecto 2</p>
+          <h1><span>Eryndor</span>Guardianes del Velo</h1>
+          <p class="cover-deck">Diseño generativo de personajes para un RPG pixel art de aventura y magia.</p>
+          <div class="member-line" id="members"></div>
+        </div>
+        <div class="cover-sigil" aria-hidden="true"><span>ϟ</span></div>
+        <dl class="cover-ledger">
+          <div><dt>Corpus</dt><dd data-bind="dataset.images">4,096</dd></div>
+          <div><dt>Formato</dt><dd data-bind="dataset.resolution">64 × 64</dd></div>
+          <div><dt>Experimentos</dt><dd>3</dd></div>
+          <div><dt id="gallery-cover-label">Meta de galería</dt><dd>10 / 200</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-2" data-title="Universo" aria-hidden="true">
+      <div class="slide-shell split-world">
+        <div class="chapter-number">01</div>
+        <div class="world-copy">
+          <p class="section-key">La vara visual</p>
+          <h2 class="slide-title">Un mundo fracturado por magia mineral</h2>
+          <p class="lead">Eryndor quedó dividido por la Ruptura Celeste. Sus guardianes exploran ruinas, recuperan reliquias y contienen grietas arcanas.</p>
+          <dl class="world-rules">
+            <div><dt>Perspectiva</dt><dd>Cuerpo completo, frontal y ortográfico.</dd></div>
+            <div><dt>Materia</dt><dd>Metal gastado, cuero, tela, madera y cristal.</dd></div>
+            <div><dt>Color</dt><dd>Cian mineral, oro brasa y amatista.</dd></div>
+            <div><dt>Roles</dt><dd>Guardianes, arcanistas, exploradores y oráculos.</dd></div>
+          </dl>
+        </div>
+        <aside class="oath-panel">
+          <span class="oath-mark">10</span>
+          <h3>Personajes distintos e inexistentes</h3>
+          <p>Ruido fijo, curvas interpretadas, vecinos cercanos y regeneración exacta.</p>
+          <strong>Sin generadores externos</strong>
+        </aside>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-3" data-title="Datos" aria-hidden="true">
+      <div class="slide-shell evidence-layout">
+        <div class="chapter-number">02</div>
+        <div class="figure-frame tall">
+          <img src="../artifacts/dataset/dataset_contact_sheet.png" alt="Muestra determinista de sprites del dataset LPC">
+          <p>Muestra determinista; composición por capas con semilla 2026.</p>
+        </div>
+        <div class="data-ledger">
+          <p class="section-key">Liberated Pixel Cup</p>
+          <h2 class="slide-title">Datos abiertos, consistentes y auditados</h2>
+          <dl class="metric-ledger">
+            <div><dt>Imágenes RGB</dt><dd data-bind="dataset.images"></dd></div>
+            <div><dt>Duplicados SHA-256</dt><dd data-bind="dataset.duplicates"></dd></div>
+            <div><dt>Archivos faltantes</dt><dd data-bind="dataset.missing"></dd></div>
+            <div><dt>Estilos de cabello</dt><dd data-bind="dataset.hair_styles"></dd></div>
+            <div><dt>Estilos de torso</dt><dd data-bind="dataset.torso_styles"></dd></div>
+            <div><dt>Ocupación media</dt><dd data-bind="dataset.foreground"></dd></div>
+            <div><dt>Capas acreditadas</dt><dd data-bind="dataset.credited_layers"></dd></div>
+          </dl>
+          <p class="fine-print">Licencias por capa: CC0, CC-BY, CC-BY-SA, OGA-BY y GPL.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-4" data-title="Arquitectura" aria-hidden="true">
+      <div class="slide-shell architecture">
+        <div class="chapter-number">03</div>
+        <p class="section-key">DCGAN 64 × 64</p>
+        <h2 class="slide-title">Una base simple, auditable y suficiente</h2>
+        <div class="architecture-flow" aria-label="Arquitectura de generador y discriminador">
+          <article class="model-path generator">
+            <h3>Generador G</h3>
+            <p class="tensor-path">128 → 512 → 256 → 128 → 64 → 3</p>
+            <p>Cinco convoluciones transpuestas. BatchNorm y ReLU internamente; <code>tanh</code> en RGB.</p>
+            <strong>3,806,080 parámetros</strong>
+          </article>
+          <div class="duel-mark" aria-hidden="true">⇄</div>
+          <article class="model-path discriminator">
+            <h3>Discriminador D</h3>
+            <p class="tensor-path">3 → 64 → 128 → 256 → 512 → 1</p>
+            <p>Cinco convoluciones. LeakyReLU 0.2; BatchNorm desde el segundo bloque; salida en logits.</p>
+            <strong>2,765,568 parámetros</strong>
+          </article>
+        </div>
+        <p class="architecture-foot">Adam · lr 2×10⁻⁴ · β=(0.5, 0.999) · batch 64 · semilla 42 · 60 épocas</p>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-5" data-title="Experimentos" aria-hidden="true">
+      <div class="slide-shell experiments">
+        <div class="chapter-number">04</div>
+        <p class="section-key">Protocolo pre-registrado</p>
+        <h2 class="slide-title">Una sola variable a la vez</h2>
+        <div class="experiment-lines">
+          <article><span>A</span><h3>BCE no saturante</h3><p>Control. Esperamos siluetas reconocibles por la consistencia del corpus.</p></article>
+          <article><span>B</span><h3>Hinge loss</h3><p>Cambia únicamente la pérdida. Esperamos gradientes útiles y mejor diversidad.</p></article>
+          <article><span>C</span><h3>Spectral norm en D</h3><p>Cambia únicamente la estabilización. Esperamos limitar periodos de dominio.</p></article>
+        </div>
+        <div class="control-strip"><strong>Control común</strong><span>datos</span><span>arquitectura</span><span>semillas</span><span>optimizadores</span><span>ruido fijo</span><span>60 épocas</span></div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-6" data-title="Ruido fijo" aria-hidden="true">
+      <div class="slide-shell image-evidence">
+        <div class="chapter-number">05</div>
+        <div class="figure-frame wide"><img src="../artifacts/experiments/latest_fixed_noise_comparison.png" alt="Comparación del mismo ruido fijo en los tres experimentos"></div>
+        <aside class="evidence-note">
+          <p class="section-key">Evidencia 1</p>
+          <h2 class="slide-title">El mismo ruido a través del tiempo</h2>
+          <p class="epoch-mark"><span data-bind="minimum_epoch">1</span><small>/ <span data-bind="target_epochs">60</span> épocas</small></p>
+          <p>Las rejillas actuales siguen dominadas por textura de alta frecuencia; todavía no hay personajes reconocibles.</p>
+          <strong>Una época valida el pipeline, no la calidad final.</strong>
+        </aside>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-7" data-title="Curvas" aria-hidden="true">
+      <div class="slide-shell image-evidence curves">
+        <div class="chapter-number">06</div>
+        <div class="figure-frame wide"><img src="../artifacts/experiments/experiment_comparison.png" alt="Curvas y métricas comparadas de los experimentos"></div>
+        <aside class="evidence-note">
+          <p class="section-key">Evidencia 2</p>
+          <h2 class="slide-title">Dinámica adversarial observada</h2>
+          <div id="experiment-metrics" class="mini-table"></div>
+          <p>D separó rápido reales y falsos. BCE y hinge tienen escalas distintas: una sola época no permite un ranking.</p>
+          <strong id="training-state">Resultado parcial</strong>
+        </aside>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-8" data-title="Estabilidad" aria-hidden="true">
+      <div class="slide-shell decisions">
+        <div class="chapter-number">07</div>
+        <p class="section-key">Fallos y controles</p>
+        <h2 class="slide-title">La estabilidad también se demuestra declarando límites</h2>
+        <div class="decision-grid">
+          <article><h3>Señales observadas</h3><ul><li>D dominante al inicio.</li><li>Rejillas todavía ruidosas.</li><li>Mode collapse aún no diagnosticable.</li></ul></article>
+          <article><h3>Controles implementados</h3><ul><li>Checkpoint rodante cada época.</li><li>Ruido fijo común y RNG restaurable.</li><li>Galería bloqueada antes de época 60.</li><li>Vecinos ResNet18 y regeneración exacta.</li></ul></article>
+        </div>
+        <blockquote>Un resultado que no mejora también es válido si el control y el análisis son honestos.</blockquote>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-9" data-title="Galería" aria-hidden="true">
+      <div class="slide-shell pending-shell" id="gallery-slide">
+        <div class="chapter-number">08</div>
+        <p class="section-key">Resultado principal</p>
+        <h2 class="slide-title">Diez guardianes de Eryndor</h2>
+        <div class="pending-panel" id="gallery-pending">
+          <span class="pending-rune">◇</span><h3>Evidencia pendiente</h3>
+          <p>Se requieren tres checkpoints de 60 épocas y un modelo seleccionado.</p>
+          <p class="status-line" id="epoch-status"></p>
+        </div>
+        <div class="gallery-ready" id="gallery-ready" hidden>
+          <img data-src="../artifacts/gallery/final_gallery_grid.png" alt="Galería final de diez personajes GAN">
+          <div><strong data-bind="selection"></strong><p>Los diez PNG conservan vector z, semilla, hash, vecino y métricas.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-10" data-title="Vecinos" aria-hidden="true">
+      <div class="slide-shell pending-shell" id="neighbors-slide">
+        <div class="chapter-number">09</div>
+        <p class="section-key">Evidencia 3</p>
+        <h2 class="slide-title">Prueba de vecinos más cercanos</h2>
+        <div class="pending-panel" id="neighbors-pending">
+          <span class="pending-rune">⌁</span><h3>Evidencia pendiente</h3>
+          <p>ResNet18, similitud coseno, MSE y la figura lado a lado están implementados. Faltan diez imágenes GAN válidas.</p>
+          <p>Tasa declarada: <strong data-bind="selection"></strong></p>
+        </div>
+        <div class="neighbors-ready" id="neighbors-ready" hidden>
+          <img data-src="../artifacts/gallery/nearest_neighbors.png" alt="Personajes GAN junto a sus vecinos reales">
+          <dl><div><dt>Similitud media</dt><dd data-bind="mean_neighbor_similarity"></dd></div><div><dt>Caso más difícil</dt><dd data-bind="hardest_character"></dd></div></dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-11" data-title="Conclusiones" aria-hidden="true">
+      <div class="slide-shell conclusions">
+        <div class="chapter-number">10</div>
+        <p class="section-key">Alcance actual</p>
+        <h2 class="slide-title">Lo que sabemos y lo que todavía no</h2>
+        <div class="conclusion-columns">
+          <div><h3>Demostrado</h3><ul><li>Dataset reproducible, único y acreditado.</li><li>DCGAN, BCE, hinge y spectral norm con gradientes finitos.</li><li>Checkpoints que restauran estado y ruido.</li><li>Selección y vecinos bloquean resultados prematuros.</li></ul></div>
+          <div><h3>Limitaciones</h3><ul><li>Una sola pose y bases anatómicas compartidas.</li><li>Embeddings ImageNet aplicados a pixel art.</li><li id="learning-limit">Aún no hay evidencia para afirmar que la GAN aprendió personajes.</li></ul><p id="reflection"><strong>Reflexión pendiente:</strong> se responderá al identificar el personaje más cercano a una imagen real.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-12" data-title="Matriz" aria-hidden="true">
+      <div class="slide-shell matrix-shell">
+        <div class="chapter-number">11</div>
+        <p class="section-key">Guía de calificación</p>
+        <h2 class="slide-title">Matriz de evidencias</h2>
+        <div class="matrix-table" role="table" aria-label="Matriz de evidencias">
+          <div class="matrix-head" role="row"><span>Evidencia</span><span>Escena</span><span>Conclusión</span><span>Limitación</span></div>
+          <div role="row"><b>Universo y datos</b><span>2–3</span><span>Coherentes, abiertos y auditados.</span><span>Una pose compartida.</span></div>
+          <div role="row"><b>Arquitectura</b><span>4</span><span>Contratos y checkpoints validados.</span><span>Calidad final pendiente.</span></div>
+          <div role="row"><b>Pérdida y estabilidad</b><span>5–8</span><span>A/B/C cambia una variable.</span><span id="matrix-training-limit">Estado 1/60.</span></div>
+          <div role="row"><b>Ruido fijo</b><span>6</span><span>Textura temprana visible.</span><span>Faltan hitos posteriores.</span></div>
+          <div role="row"><b>Curvas</b><span>7–8</span><span>D domina al inicio.</span><span>Una época no basta.</span></div>
+          <div role="row"><b>Galería + 10/200</b><span>9</span><span id="matrix-gallery">Pipeline listo y bloqueo correcto.</span><span id="matrix-gallery-limit">Sin PNG finales.</span></div>
+          <div role="row"><b>Vecinos</b><span>10</span><span id="matrix-neighbors">Código probado sin fabricar resultados.</span><span>ResNet18 no es específica de pixel art.</span></div>
+          <div role="row"><b>Reflexión</b><span>11</span><span>Alcance declarado con honestidad.</span><span>Depende de la galería validada.</span></div>
+        </div>
+        <p class="source-line">Goodfellow et al. (2014) · Universal LPC Character Generator · LPC Style Guide · IA declarada en README</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="deck-controls">
+    <button type="button" id="prev-button" aria-label="Diapositiva anterior">Anterior</button>
+    <span id="slide-counter" aria-live="polite">1 / 12</span>
+    <button type="button" id="next-button" aria-label="Diapositiva siguiente">Siguiente</button>
+    <span class="key-hint">← → navegar · O vista general · F pantalla completa</span>
+  </footer>
+
+  <noscript>Esta presentación necesita JavaScript para la navegación y la actualización de métricas.</noscript>
+  <script src="assets/presentation-data.js"></script>
+  <script src="assets/presentation.js"></script>
+</body>
+</html>

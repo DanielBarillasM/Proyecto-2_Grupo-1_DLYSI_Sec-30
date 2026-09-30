@@ -18,6 +18,7 @@ def parse_args(default_epochs: int) -> argparse.Namespace:
     parser.add_argument("--epochs", type=int, default=default_epochs)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     parser.add_argument("--num-workers", type=int, default=0)
+    parser.add_argument("--backup-root", type=Path)
     return parser.parse_args()
 
 
@@ -39,6 +40,8 @@ def main() -> None:
             "--num-workers",
             str(args.num_workers),
         ]
+        if args.backup_root:
+            command.extend(["--backup-root", str(args.backup_root)])
         print(f"\n=== {experiment['id']} ===", flush=True)
         subprocess.run(command, cwd=ROOT, check=True)
 

@@ -2,7 +2,7 @@
 
 Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG pixel art de aventura y magia mediante una GAN entrenada por el equipo.
 
-> **Estado actual:** fase 6 implementada. La presentación regenerable de 12 diapositivas ya compila y pasa la revisión técnica y visual. El pipeline mantiene la galería, los vecinos y la reflexión final como evidencia pendiente mientras los tres experimentos permanezcan en 1 de 60 épocas.
+> **Estado actual:** fase 7 preparada para Google Colab. Los tres experimentos conservan resultados reales de 1/60 épocas; el notebook de GPU permite reanudarlos con respaldo a Drive en cada época. La presentación HTML interactiva y el PDF mantienen galería, vecinos y reflexión como evidencia pendiente hasta completar el entrenamiento.
 
 ## Resultado de esta fase
 
@@ -25,6 +25,8 @@ Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG p
 | Pipeline de selección | Smoke test sintético aprobado |
 | Galería final válida | Pendiente de checkpoints de 60 épocas |
 | Presentación PDF | 12 páginas, validación automática aprobada |
+| Presentación HTML | 12 escenas, teclado, vista general y validación en navegador |
+| Entrenamiento Colab | Preparado; falta ejecutar épocas 2–60 |
 
 El conjunto usa una pose frontal consistente, fondo obsidiana y combinaciones de armadura, ropa, cabello, sombreros, tonos y armas acordes con el universo. La construcción usa semilla `2026`, deduplicación SHA-256 y manifiesto por imagen.
 
@@ -59,6 +61,12 @@ pip install -r requirements.txt
 powershell -ExecutionPolicy Bypass -File scripts\fetch_lpc.ps1
 python scripts\prepare_dataset.py --count 4096
 jupyter lab notebooks\01_proyecto_gan.ipynb
+```
+
+En Linux o Google Colab, el equivalente multiplataforma es:
+
+```bash
+python scripts/fetch_lpc.py
 ```
 
 Si el manifiesto ya existe, el script lo reutiliza. Para regenerar exactamente las composiciones con la misma semilla:
@@ -109,7 +117,7 @@ El smoke test real utilizó CPU, batch 8 y ocho pasos. Todas las pérdidas fuero
 
 ![Curvas del smoke test](artifacts/smoke_test/smoke_training_curves.png)
 
-## Fase 4: entrenamiento controlado
+## Entrenamiento controlado — puntos 6 a 8 del plan
 
 Los tres experimentos arrancaron con el protocolo pre-registrado completo: 4,096 imágenes, batch 64, 64 pasos por época, arquitectura idéntica, semilla de modelo `42` y el mismo ruido fijo con semilla `777`. Solo cambian la pérdida o la normalización espectral según el diseño A/B/C.
 
@@ -140,7 +148,7 @@ python scripts\compare_experiments.py
 
 El checkpoint completo se mantiene como archivo rodante para limitar el uso de disco; en las épocas 5, 10, 15, ..., 60 se conserva además una instantánea liviana del generador y su rejilla fija.
 
-## Fase 5: galería y prueba de novedad
+## Galería y prueba de novedad — puntos 9 a 11 del plan
 
 La implementación cumple el protocolo obligatorio sin presentar resultados prematuros:
 
@@ -171,11 +179,18 @@ La primera ejecución final descargará una vez los pesos oficiales de ResNet18 
 
 > **Resultado actual honesto:** el smoke test usa datos sintéticos únicamente para validar filtrado, vecinos y selección. No crea imágenes en `galeria/` y no constituye evidencia de calidad de la GAN.
 
-## Fase 6: presentación regenerable
+## Presentación regenerable — punto 14 del plan
 
-[`presentation/presentacion.pdf`](presentation/presentacion.pdf) funciona como informe visual del proyecto y respeta el máximo de 12 diapositivas. Sigue el tema **Midnight Galaxy**, incorpora la matriz de evidencias exigida y cubre universo, datos, arquitectura, hipótesis A/B/C, ruido fijo, curvas, fallos, galería, vecinos, conclusiones y reflexión.
+[`presentation/presentacion.html`](presentation/presentacion.html) es la versión interactiva para exponer: navegación por teclado, pantalla completa, vista general, diseño responsivo y actualización desde artefactos reales. [`presentation/presentacion.pdf`](presentation/presentacion.pdf) funciona como informe entregable y respeta el máximo de 12 diapositivas. Ambas incorporan la matriz exigida y cubren universo, datos, arquitectura, hipótesis A/B/C, ruido fijo, curvas, fallos, galería, vecinos, conclusiones y reflexión.
 
 La presentación no contiene métricas escritas a mano: [`scripts/build_presentation.py`](scripts/build_presentation.py) lee los artefactos vigentes, genera `presentation/generated_results.tex`, compila con XeLaTeX y comprueba el número de páginas, el formato 16:9 y la presencia de texto. Mientras no existan checkpoints completos y una galería validada, las diapositivas 9, 10 y parte de la 11 muestran explícitamente **evidencia pendiente**.
+
+La versión web se actualiza y valida con:
+
+```powershell
+python scripts\build_html_presentation.py
+start presentation\presentacion.html
+```
 
 Para regenerarla:
 
@@ -183,15 +198,29 @@ Para regenerarla:
 python scripts\build_presentation.py
 ```
 
-El resultado de la última validación queda en `artifacts/presentation/build_status.json`. La tipografía GNU FreeSans se incluye con su licencia para que la apariencia sea reproducible.
+Los resultados de validación quedan en `artifacts/presentation/build_status.json` y `html_status.json`. La tipografía GNU FreeSans se incluye con su licencia para que la apariencia sea reproducible.
+
+## Fase 7: entrenamiento preparado para Colab
+
+[`notebooks/02_entrenamiento_colab.ipynb`](notebooks/02_entrenamiento_colab.ipynb) guía la ejecución GPU sin cambiar el protocolo A/B/C. Reconstruye el dataset en el disco rápido del runtime, restaura avances desde Drive y usa `--backup-root` para reflejar checkpoints, métricas y ruido fijo al terminar cada época.
+
+Cambios de seguridad para sesiones interrumpibles:
+
+- `latest.pt` se sobrescribe atómicamente al finalizar **cada época**;
+- las instantáneas históricas del generador y del ruido fijo permanecen cada cinco épocas;
+- una nueva sesión puede restaurar automáticamente el estado respaldado;
+- el notebook exige CUDA y verifica que no existan épocas duplicadas después de reanudar;
+- el descargador `scripts/fetch_lpc.py` funciona en Linux, Windows y Colab.
+
+Uso recomendado: subir esta carpeta a `Mi unidad/Proyecto-2_Grupo-1_DLYSI_Sec-30`, abrir el notebook en Colab y seleccionar un runtime GPU. La ejecución completa no se ha simulado localmente: los resultados oficiales seguirán siendo 1/60 hasta correr esas celdas.
 
 ## Trabajo pendiente antes de la entrega
 
-1. Reanudar A, B y C desde la época 2 y llegar a 60 con el protocolo controlado.
-2. Conservar checkpoints, métricas y ruido fijo cada cinco épocas.
-3. Comparar evolución fija y curvas para seleccionar el modelo final.
-4. Ejecutar y validar la galería 10/200 con vecinos cercanos.
-5. Regenerar la presentación después de validar la galería; el contenido final se actualizará automáticamente.
+1. Ejecutar la fase 7 en Colab y llevar A, B y C de la época 2 a la 60.
+2. Completar la fase 8 interpretando pérdidas, logits, diversidad y ruido fijo por época.
+3. Ejecutar los puntos 9–11 ya implementados para producir y validar la galería 10/200.
+4. Regenerar HTML y PDF después de validar la galería.
+5. Ejecutar la validación integral del punto 15 antes de comprimir la entrega.
 
 ## Estructura
 
@@ -205,8 +234,10 @@ El resultado de la última validación queda en `artifacts/presentation/build_st
 ├── docs/                    # Plan, tema y atribuciones
 ├── galeria/                 # Diez salidas finales de la GAN
 ├── notebooks/01_proyecto_gan.ipynb
+├── notebooks/02_entrenamiento_colab.ipynb
 ├── presentation/            # Fuente LaTeX, tipografía y PDF de 12 diapositivas
 ├── scripts/fetch_lpc.ps1
+├── scripts/fetch_lpc.py
 ├── scripts/prepare_dataset.py
 ├── scripts/smoke_test_gan.py
 ├── scripts/train_experiment.py
@@ -216,6 +247,8 @@ El resultado de la última validación queda en `artifacts/presentation/build_st
 ├── scripts/smoke_test_evaluation.py
 ├── scripts/build_gallery.py
 ├── scripts/build_presentation.py
+├── scripts/build_html_presentation.py
+├── scripts/build_colab_notebook.py
 ├── scripts/validate_gallery.py
 ├── src/data.py
 ├── src/evaluation.py

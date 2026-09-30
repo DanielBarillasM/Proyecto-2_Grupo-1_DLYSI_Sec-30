@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "html": "presentation/presentacion.html",
+  "slides": 12,
+  "titled_slides": 11,
+  "training_complete": false,
+  "gallery_ready": false,
+  "keyboard_navigation": true,
+  "print_layout": "16:9, una escena por página",
+  "missing_assets": []
+}

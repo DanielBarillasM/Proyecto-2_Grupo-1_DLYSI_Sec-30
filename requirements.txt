@@ -10,4 +10,5 @@ tqdm>=4.66,<5
 scikit-learn>=1.5,<2
 jupyterlab>=4,<5
 nbformat>=5.10,<6
+PyMuPDF>=1.24,<2
 

@@ -35,8 +35,8 @@ cells = [
 **Universidad del Valle de Guatemala**  
 Deep Learning · 2026
 
-> **Integrantes:** completar antes de entregar.  
-> **Estado:** fase 5 implementada con bloqueo seguro — entrenamiento aún en 1 de 60 épocas.
+> **Integrantes:** Pablo Daniel Barillas Moreno · Wilson Alejandro Calderón  
+> **Estado:** fase 7 preparada para Google Colab — entrenamiento aún en 1 de 60 épocas.
 > **Regla principal:** ninguna imagen final puede proceder de un generador externo.
 """
     ),
@@ -584,17 +584,16 @@ python scripts\validate_gallery.py
     ),
     md(
         r"""
-## 13. Estado y siguiente fase
+## 13. Estado actual y fase 7
 
-<div class="callout magic"><strong>Fase 5 implementada, todavía no ejecutable como entrega final.</strong> El código de generación, selección, vecinos cercanos y regeneración está listo y probado de manera aislada. Los tres experimentos permanecen en 1/60, por lo que no existe aún un modelo seleccionado ni una galería válida.</div>
+<div class="callout magic"><strong>Entrenamiento preparado para Colab.</strong> El notebook <code>02_entrenamiento_colab.ipynb</code> restaura checkpoints, usa CUDA y refleja el estado crítico a Google Drive al terminar cada época. Los tres experimentos permanecen en 1/60 hasta ejecutarlo; por ello todavía no existe un modelo seleccionado ni una galería válida.</div>
 
 ### Siguiente fase
 
+- ejecutar <code>notebooks/02_entrenamiento_colab.ipynb</code> con GPU;
 - reanudar los tres experimentos desde la época 2 hasta la 60;
-- conservar rejillas de ruido fijo y métricas por época;
-- comparar A/B/C y seleccionar el modelo con evidencia visual y cuantitativa;
-- ejecutar y validar la galería 10/200 con vecinos cercanos;
-- construir la presentación PDF de máximo 12 diapositivas y su matriz de evidencias.
+- pasar a la fase 8 para interpretar pérdidas, logits, diversidad y muestras por época;
+- actualizar automáticamente las presentaciones HTML y PDF con la evidencia completa.
 
 ### Referencias metodológicas
 

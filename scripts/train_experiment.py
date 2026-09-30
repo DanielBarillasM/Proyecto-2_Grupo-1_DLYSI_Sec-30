@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -44,6 +45,11 @@ def parse_args(experiment_ids: list[str], default_epochs: int) -> argparse.Names
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--no-resume", action="store_true")
+    parser.add_argument(
+        "--backup-root",
+        type=Path,
+        help="Raíz opcional donde se refleja el estado reanudable después de cada época.",
+    )
     return parser.parse_args()
 
 
@@ -60,6 +66,47 @@ def atomic_csv(frame: pd.DataFrame, path: Path) -> None:
     temporary = path.with_suffix(path.suffix + ".tmp")
     frame.to_csv(temporary, index=False, encoding="utf-8")
     temporary.replace(path)
+
+
+def restore_backup_if_needed(
+    backup_root: Path | None,
+    experiment_id: str,
+    checkpoint_dir: Path,
+    artifact_dir: Path,
+) -> None:
+    if backup_root is None or (checkpoint_dir / "latest.pt").exists():
+        return
+    backup_checkpoint = backup_root / "checkpoints" / experiment_id
+    backup_artifact = backup_root / "artifacts" / "experiments" / experiment_id
+    if not (backup_checkpoint / "latest.pt").exists():
+        return
+    shutil.copytree(backup_checkpoint, checkpoint_dir, dirs_exist_ok=True)
+    if backup_artifact.exists():
+        shutil.copytree(backup_artifact, artifact_dir, dirs_exist_ok=True)
+    print(f"Estado restaurado desde {backup_root}", flush=True)
+
+
+def mirror_training_state(
+    backup_root: Path | None,
+    experiment_id: str,
+    checkpoint_dir: Path,
+    artifact_dir: Path,
+) -> None:
+    if backup_root is None:
+        return
+    backup_root = backup_root.resolve()
+    if backup_root == ROOT.resolve():
+        return
+    shutil.copytree(
+        checkpoint_dir,
+        backup_root / "checkpoints" / experiment_id,
+        dirs_exist_ok=True,
+    )
+    shutil.copytree(
+        artifact_dir,
+        backup_root / "artifacts" / "experiments" / experiment_id,
+        dirs_exist_ok=True,
+    )
 
 
 def aggregate_epoch(
@@ -108,6 +155,13 @@ def main() -> None:
     history_path = artifact_dir / "epoch_metrics.csv"
     steps_path = artifact_dir / "step_metrics.csv"
     status_path = artifact_dir / "status.json"
+    backup_root = args.backup_root.resolve() if args.backup_root else None
+    restore_backup_if_needed(
+        backup_root,
+        args.experiment,
+        checkpoint_dir,
+        artifact_dir,
+    )
 
     seed_everything(int(training["model_seed"]))
     loader = build_dataloader(
@@ -234,18 +288,6 @@ def main() -> None:
                 fixed_dir / f"epoch_{epoch:03d}.png",
                 f"{args.experiment} · época {epoch}",
             )
-            save_checkpoint(
-                latest_checkpoint,
-                generator,
-                discriminator,
-                optimizer_g,
-                optimizer_d,
-                fixed_noise,
-                experiment,
-                epoch=epoch,
-                global_step=global_step,
-                data_generator=loader.generator,
-            )
             save_generator_snapshot(
                 checkpoint_dir / f"generator_epoch_{epoch:03d}.pt",
                 generator,
@@ -254,6 +296,19 @@ def main() -> None:
                 global_step,
                 int(training["fixed_noise_seed"]),
             )
+
+        save_checkpoint(
+            latest_checkpoint,
+            generator,
+            discriminator,
+            optimizer_g,
+            optimizer_d,
+            fixed_noise,
+            experiment,
+            epoch=epoch,
+            global_step=global_step,
+            data_generator=loader.generator,
+        )
 
         status = {
             "status": "complete"
@@ -270,11 +325,16 @@ def main() -> None:
             "last_epoch_seconds": elapsed,
             "run_elapsed_seconds": time.perf_counter() - total_started,
             "latest_metrics": epoch_row,
-            "rolling_checkpoint": latest_checkpoint.relative_to(ROOT).as_posix()
-            if (is_milestone or is_final)
-            else None,
+            "rolling_checkpoint": latest_checkpoint.relative_to(ROOT).as_posix(),
+            "backup_root": str(backup_root) if backup_root else None,
         }
         write_json(status_path, status)
+        mirror_training_state(
+            backup_root,
+            args.experiment,
+            checkpoint_dir,
+            artifact_dir,
+        )
         print(
             f"[{args.experiment}] época {epoch:03d}/{args.epochs:03d} · "
             f"D={float(epoch_row['loss_d']):.4f} · G={float(epoch_row['loss_g']):.4f} · "

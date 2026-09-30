@@ -1,6 +1,17 @@
-# Presentación
+# Presentaciones HTML y PDF
 
-La presentación funciona como informe del Proyecto 2 y contiene exactamente 12 diapositivas. Usa el tema **Midnight Galaxy** de Theme Factory y la tipografía GNU FreeSans incluida en `fonts/`.
+La versión principal para exponer es `presentacion.html`: funciona sin servidor, admite teclado, pantalla completa, vista general y actualización automática de resultados. Conserva exactamente 12 escenas y una salida de impresión por escena.
+
+El archivo `presentacion.pdf` se mantiene porque es el entregable exigido por el enunciado. Ambas versiones usan la dirección visual mineral de Eryndor, el tema **Midnight Galaxy** y la tipografía GNU FreeSans incluida en `fonts/`.
+
+Para regenerar y validar el HTML:
+
+```powershell
+python scripts\build_html_presentation.py
+start presentation\presentacion.html
+```
+
+Controles: flechas o espacio para avanzar, `O` para vista general, `F` para pantalla completa, `Home`/`End` para los extremos. Desde el navegador se puede imprimir a PDF con una escena por página.
 
 Para actualizar métricas, compilar y validar el número de páginas:
 
@@ -8,9 +19,9 @@ Para actualizar métricas, compilar y validar el número de páginas:
 python scripts\build_presentation.py
 ```
 
-El archivo `generated_results.tex` se genera desde los CSV/JSON del proyecto. Si la galería todavía no fue validada, las diapositivas correspondientes muestran un estado pendiente en lugar de resultados fabricados.
+`presentation-data.js` y `generated_results.tex` se generan desde los CSV/JSON del proyecto. Si la galería todavía no fue validada, ambas presentaciones muestran un estado pendiente en lugar de resultados fabricados.
 
-Salida final: `presentation/presentacion.pdf`.
+Salidas: `presentation/presentacion.html` y `presentation/presentacion.pdf`.
 
 ## Tipografía
 
