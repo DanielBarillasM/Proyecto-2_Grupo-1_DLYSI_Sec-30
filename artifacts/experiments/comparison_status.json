@@ -1,11 +1,11 @@
 {
   "experiments_available": 3,
-  "all_reached_target": false,
+  "all_reached_target": true,
   "target_epochs": 60,
   "completed_epochs": {
-    "baseline_bce": 1,
-    "hinge_loss": 1,
-    "bce_spectral_norm": 1
+    "baseline_bce": 60,
+    "hinge_loss": 60,
+    "bce_spectral_norm": 60
   },
-  "estimated_remaining_cpu_hours": 9.410850240383944
+  "estimated_remaining_cpu_hours": 0.0
 }
