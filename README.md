@@ -2,7 +2,7 @@
 
 Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG pixel art de aventura y magia mediante una GAN entrenada por el equipo.
 
-> **Estado actual:** fase 7 preparada para Google Colab. Los tres experimentos conservan resultados reales de 1/60 épocas; el notebook de GPU permite reanudarlos con respaldo a Drive en cada época. La presentación HTML interactiva y el PDF mantienen galería, vecinos y reflexión como evidencia pendiente hasta completar el entrenamiento.
+> **Estado actual:** fase 8 completada. Los tres experimentos alcanzaron 60/60 épocas en GPU y fueron auditados sin duplicados, faltantes ni valores no finitos. `bce_spectral_norm` es la selección provisional para las fases 9–10; su checkpoint está disponible y solo faltan los pesos oficiales de ResNet18 para iniciar vecinos y galería.
 
 ## Resultado de esta fase
 
@@ -21,12 +21,14 @@ Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG p
 | Parámetros G / D | 3,806,080 / 2,765,568 |
 | Smoke test | 8 pasos, 64 imágenes, aprobado |
 | Checkpoint recargado | Error máximo absoluto 0 |
-| Entrenamiento A / B / C | 1 / 1 / 1 épocas de 60 |
+| Entrenamiento A / B / C | 60 / 60 / 60 épocas |
+| Auditoría de fase 8 | 180 épocas + 11,520 pasos válidos |
+| Modelo provisional | C · BCE + spectral normalization |
 | Pipeline de selección | Smoke test sintético aprobado |
-| Galería final válida | Pendiente de checkpoints de 60 épocas |
+| Galería final válida | Pendiente de vecinos y selección 10/200 |
 | Presentación PDF | 12 páginas, validación automática aprobada |
 | Presentación HTML | 12 escenas, teclado, vista general y validación en navegador |
-| Entrenamiento Colab | Preparado; falta ejecutar épocas 2–60 |
+| Entrenamiento Colab | Completado; artefactos sincronizados |
 
 El conjunto usa una pose frontal consistente, fondo obsidiana y combinaciones de armadura, ropa, cabello, sombreros, tonos y armas acordes con el universo. La construcción usa semilla `2026`, deduplicación SHA-256 y manifiesto por imagen.
 
@@ -119,17 +121,27 @@ El smoke test real utilizó CPU, batch 8 y ocho pasos. Todas las pérdidas fuero
 
 ## Entrenamiento controlado — puntos 6 a 8 del plan
 
-Los tres experimentos arrancaron con el protocolo pre-registrado completo: 4,096 imágenes, batch 64, 64 pasos por época, arquitectura idéntica, semilla de modelo `42` y el mismo ruido fijo con semilla `777`. Solo cambian la pérdida o la normalización espectral según el diseño A/B/C.
+Los tres experimentos completaron el protocolo pre-registrado: 4,096 imágenes, batch 64, 64 pasos por época, arquitectura idéntica, semilla de modelo `42` y el mismo ruido fijo con semilla `777`. Solo cambiaron la pérdida o la normalización espectral según el diseño A/B/C.
 
 | Experimento | Épocas | loss D | loss G | Logit real | Logit falso para G | Diversidad fija |
 |---|---:|---:|---:|---:|---:|---:|
-| `baseline_bce` | 1 / 60 | 0.1156 | 8.5477 | 8.1657 | −8.5457 | 0.0551 |
-| `hinge_loss` | 1 / 60 | 0.2482 | 15.2575 | 8.4436 | −15.2575 | 0.0860 |
-| `bce_spectral_norm` | 1 / 60 | 0.0760 | 6.8625 | 5.9985 | −6.8588 | 0.0618 |
+| `baseline_bce` | 60 / 60 | 0.0789 | 5.6369 | 5.1900 | −5.6287 | 0.2585 |
+| `hinge_loss` | 60 / 60 | 0.0000 | 8.1271 | 5.0046 | −8.1271 | 0.0136 |
+| `bce_spectral_norm` | 60 / 60 | 0.1905 | 7.0557 | 5.4518 | −7.0458 | 0.2659 |
 
-Estas cifras son evidencia de ejecución, no un ranking: BCE y hinge tienen escalas distintas y una sola época no permite juzgar calidad. Las rejillas todavía muestran textura de alta frecuencia sin personajes reconocibles. En la CPU disponible, las épocas tardaron entre 184 y 205 segundos; quedan aproximadamente 9.4 horas de cómputo local para completar las tres corridas.
+Las magnitudes BCE y hinge no se comparan directamente. La decisión usa la trayectoria completa, el mismo ruido fijo y revisión visual: el baseline conserva personajes reconocibles y diversidad final de 0.2585; hinge colapsa a una plantilla casi única, termina en 0.0136 y acumula 23 épocas con `loss_D < 1e-3`; la variante con normalización espectral mantiene la mayor diversidad final (0.2659) y media de las últimas diez épocas (0.2671), además de la mejor variedad cromática observada.
 
-![Comparación de la época disponible](artifacts/experiments/latest_fixed_noise_comparison.png)
+Por estas señales, **C · BCE + spectral normalization** queda seleccionado provisionalmente. La decisión debe confirmarse con vecinos ResNet18, MSE y el lote de 200 candidatos.
+
+![Hitos del mismo ruido fijo](artifacts/phase8/fixed_noise_milestones.png)
+
+![Diagnóstico de las trayectorias completas](artifacts/phase8/phase8_diagnostics.png)
+
+La auditoría reproducible se ejecuta con:
+
+```powershell
+python scripts\analyze_phase8.py
+```
 
 El ejecutor secuencial reanuda automáticamente cada experimento desde `checkpoints/<id>/latest.pt`:
 
@@ -168,10 +180,10 @@ python scripts\check_phase5_readiness.py
 python scripts\smoke_test_evaluation.py
 ```
 
-Cuando A, B y C lleguen a 60 épocas, se compararán sus rejillas y curvas para escoger el checkpoint defendible. Después:
+Con C seleccionado provisionalmente y su checkpoint disponible localmente, el siguiente paso es ejecutar:
 
 ```powershell
-python scripts\build_gallery.py --experiment <baseline_bce|hinge_loss|bce_spectral_norm>
+python scripts\build_gallery.py --experiment bce_spectral_norm
 python scripts\validate_gallery.py
 ```
 
@@ -183,7 +195,7 @@ La primera ejecución final descargará una vez los pesos oficiales de ResNet18 
 
 [`presentation/presentacion.html`](presentation/presentacion.html) es la versión interactiva para exponer: navegación por teclado, pantalla completa, vista general, diseño responsivo y actualización desde artefactos reales. [`presentation/presentacion.pdf`](presentation/presentacion.pdf) funciona como informe entregable y respeta el máximo de 12 diapositivas. Ambas incorporan la matriz exigida y cubren universo, datos, arquitectura, hipótesis A/B/C, ruido fijo, curvas, fallos, galería, vecinos, conclusiones y reflexión.
 
-La presentación no contiene métricas escritas a mano: [`scripts/build_presentation.py`](scripts/build_presentation.py) lee los artefactos vigentes, genera `presentation/generated_results.tex`, compila con XeLaTeX y comprueba el número de páginas, el formato 16:9 y la presencia de texto. Mientras no existan checkpoints completos y una galería validada, las diapositivas 9, 10 y parte de la 11 muestran explícitamente **evidencia pendiente**.
+La presentación no contiene métricas escritas a mano: [`scripts/build_presentation.py`](scripts/build_presentation.py) lee los artefactos vigentes, genera `presentation/generated_results.tex`, compila con XeLaTeX y comprueba el número de páginas, el formato 16:9 y la presencia de texto. El entrenamiento y la fase 8 ya están reflejados; las diapositivas de galería y vecinos mantienen explícitamente **evidencia pendiente** hasta completar las fases 9–11.
 
 La versión web se actualiza y valida con:
 
@@ -200,7 +212,7 @@ python scripts\build_presentation.py
 
 Los resultados de validación quedan en `artifacts/presentation/build_status.json` y `html_status.json`. La tipografía GNU FreeSans se incluye con su licencia para que la apariencia sea reproducible.
 
-## Fase 7: entrenamiento preparado para Colab
+## Fase 7 completada: entrenamiento reanudable en Colab
 
 [`notebooks/02_entrenamiento_colab.ipynb`](notebooks/02_entrenamiento_colab.ipynb) guía la ejecución GPU sin cambiar el protocolo A/B/C. Reconstruye el dataset en el disco rápido del runtime, restaura avances desde Drive y usa `--backup-root` para reflejar checkpoints, métricas y ruido fijo al terminar cada época.
 
@@ -212,21 +224,20 @@ Cambios de seguridad para sesiones interrumpibles:
 - el notebook exige CUDA y verifica que no existan épocas duplicadas después de reanudar;
 - el descargador `scripts/fetch_lpc.py` funciona en Linux, Windows y Colab.
 
-Uso recomendado: subir esta carpeta a `Mi unidad/Proyecto-2_Grupo-1_DLYSI_Sec-30`, abrir el notebook en Colab y seleccionar un runtime GPU. La ejecución completa no se ha simulado localmente: los resultados oficiales seguirán siendo 1/60 hasta correr esas celdas.
+La fase 7 ya terminó: los artefactos de métricas y muestras de A/B/C quedaron sincronizados. Los checkpoints pesados están disponibles localmente y respaldados en Drive, pero no se versionan en GitHub.
 
 ## Trabajo pendiente antes de la entrega
 
-1. Ejecutar la fase 7 en Colab y llevar A, B y C de la época 2 a la 60.
-2. Completar la fase 8 interpretando pérdidas, logits, diversidad y ruido fijo por época.
-3. Ejecutar los puntos 9–11 ya implementados para producir y validar la galería 10/200.
-4. Regenerar HTML y PDF después de validar la galería.
-5. Ejecutar la validación integral del punto 15 antes de comprimir la entrega.
+1. Ejecutar la fase 9: descargar ResNet18 y calcular vecinos más cercanos y MSE con el checkpoint C local.
+2. Ejecutar las fases 10–11: generar 200 candidatos, seleccionar 10 y guardar sus vectores `z` y manifiesto.
+3. Cerrar los puntos 12–14: README, notebook y presentación con la galería validada.
+4. Ejecutar la matriz de evidencias y validación integral del punto 15 antes de comprimir la entrega.
 
 ## Estructura
 
 ```text
 .
-├── artifacts/               # Figuras y métricas
+├── artifacts/               # Figuras y métricas, incluida la auditoría phase8/
 ├── checkpoints/             # Pesos y estados de optimizador
 ├── configs/experiments.yaml
 ├── data/raw/                # Clon LPC selectivo, no versionado
@@ -243,6 +254,7 @@ Uso recomendado: subir esta carpeta a `Mi unidad/Proyecto-2_Grupo-1_DLYSI_Sec-30
 ├── scripts/train_experiment.py
 ├── scripts/train_all.py
 ├── scripts/compare_experiments.py
+├── scripts/analyze_phase8.py
 ├── scripts/check_phase5_readiness.py
 ├── scripts/smoke_test_evaluation.py
 ├── scripts/build_gallery.py

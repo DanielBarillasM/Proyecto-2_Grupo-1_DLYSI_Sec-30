@@ -2,9 +2,9 @@
   "status": "blocked",
   "target_epochs": 60,
   "completed_epochs": {
-    "baseline_bce": 1,
-    "hinge_loss": 1,
-    "bce_spectral_norm": 1
+    "baseline_bce": 60,
+    "hinge_loss": 60,
+    "bce_spectral_norm": 60
   },
   "checkpoints_present": {
     "baseline_bce": true,
@@ -18,10 +18,7 @@
   },
   "gallery_manifest_exists": false,
   "blocking_reasons": [
-    "baseline_bce: 1/60 épocas",
-    "hinge_loss: 1/60 épocas",
-    "bce_spectral_norm: 1/60 épocas",
     "pesos preentrenados ResNet18 aún no están en caché"
   ],
-  "next_command": "python scripts/train_all.py --epochs 60 --device auto"
+  "next_command": "python scripts/build_gallery.py --experiment <id>"
 }

@@ -18,7 +18,7 @@ El repositorio LPC incluye arte bajo varias licencias abiertas. Se conservará `
 
 ## Arquitectura base
 
-> **Estado de implementación:** puntos 1–6 completados; punto 7 preparado para Google Colab y corridas A/B/C en 1/60. Los puntos 9–11 tienen infraestructura adelantada con bloqueo seguro. Todavía no es válido seleccionar un modelo ni producir la galería final.
+> **Estado de implementación:** puntos 1–8 completados. A/B/C alcanzaron 60/60 épocas y la auditoría selecciona provisionalmente `bce_spectral_norm`. Los puntos 9–11 tienen infraestructura adelantada; el checkpoint C está disponible y falta descargar ResNet18 para vecinos y galería.
 
 ## Ejecución de la fase 7 en Colab
 
@@ -130,7 +130,7 @@ No se elegirá por una sola pérdida. Se considerarán conjuntamente:
 - **Memorización:** vecinos cercanos en embeddings y píxeles.
 - **Discriminador dominante:** inspeccionar logits reales/falsos y periodos con pérdida casi nula.
 - **Datos heterogéneos:** filtrar capas o composiciones que rompan perspectiva y escala.
-- **Interrupción de Colab:** checkpoints cada cinco épocas y reanudación completa del optimizador.
+- **Interrupción de Colab:** checkpoint rodante cada época, instantáneas cada cinco épocas y reanudación completa del optimizador.
 - **Licencias mixtas:** conservar créditos por capa y no presentar el material como propietario.
 
 ## Verificación de fase 3
@@ -145,17 +145,19 @@ No se elegirá por una sola pérdida. Se considerarán conjuntamente:
 
 El smoke test mostró dominio temprano del discriminador: `loss_D` cayó de 1.879 a 0.153 y `loss_G` subió de 4.970 a 7.522. Esta observación no decide el modelo final, pero define una señal que debe vigilarse en las primeras épocas de los tres experimentos.
 
-## Avance verificable de fase 4
+## Resultado completo de fase 8
 
-Los tres experimentos ejecutaron una época completa sobre las 4,096 imágenes (`64 pasos × batch 64`) con las semillas y el ruido fijo pre-registrados.
+Los tres experimentos ejecutaron 60 épocas sobre las 4,096 imágenes (`64 pasos × batch 64`) con semillas, arquitectura y ruido fijo pre-registrados. La auditoría confirmó 180 filas por época y 11,520 pasos sin duplicados, faltantes ni valores no finitos.
 
 | Experimento | Épocas | loss D | loss G | Logit real | Logit falso para G | Distancia fija media |
 |---|---:|---:|---:|---:|---:|---:|
-| `baseline_bce` | 1 / 60 | 0.115594 | 8.547736 | 8.165656 | −8.545664 | 0.055057 |
-| `hinge_loss` | 1 / 60 | 0.248229 | 15.257540 | 8.443574 | −15.257540 | 0.086031 |
-| `bce_spectral_norm` | 1 / 60 | 0.076024 | 6.862513 | 5.998485 | −6.858795 | 0.061835 |
+| `baseline_bce` | 60 / 60 | 0.078925 | 5.636890 | 5.189998 | −5.628745 | 0.258450 |
+| `hinge_loss` | 60 / 60 | 0.000000 | 8.127060 | 5.004600 | −8.127060 | 0.013637 |
+| `bce_spectral_norm` | 60 / 60 | 0.190468 | 7.055717 | 5.451825 | −7.045843 | 0.265886 |
 
-Las pérdidas de BCE y hinge no se comparan directamente por su distinta escala. A esta altura, las tres rejillas siguen dominadas por textura de alta frecuencia y no muestran personajes reconocibles. La corrida local medida requiere cerca de 9.4 horas adicionales de CPU; `scripts/train_all.py` puede reanudar desde la época 2 sin reiniciar modelos, optimizadores, ruido fijo ni el orden de datos.
+Las pérdidas de BCE y hinge no se comparan directamente por su distinta escala. El baseline produce personajes reconocibles y mantiene diversidad; hinge presenta colapso de modo, diversidad final de 0.0136 y 23 épocas con `loss_D < 1e-3`; la variante C mantiene la mayor diversidad final (0.2659) y media en las últimas diez épocas (0.2671), además de mayor variedad cromática en la revisión de hitos.
+
+Por ello, `bce_spectral_norm` es la selección provisional para las fases 9–10. La selección aún debe validarse con vecinos ResNet18, MSE en píxeles y el lote de 200 candidatos; la distancia L2 del ruido fijo es un proxy y no una métrica perceptual definitiva.
 
 ## Implementación de fase 5
 
@@ -177,7 +179,7 @@ La generación y auditoría de la galería quedó implementada con una precondic
 ### Estado verificable
 
 - Prueba sintética de filtrado, vecinos y selección: aprobada.
-- Checkpoints A/B/C: 1/60, por lo que la galería final permanece correctamente vacía.
+- Métricas A/B/C: 60/60; el checkpoint seleccionado está disponible localmente y respaldado en Drive.
 - Pesos ResNet18: se descargarán desde la URL oficial de PyTorch en la primera ejecución final; no se permiten pesos aleatorios como sustituto.
 - Tasa de selección que se declarará: `10/200 = 5%`.
 - Nombres y roles: asignados después de la selección para optar a la bonificación, sin intervenir en la métrica técnica.

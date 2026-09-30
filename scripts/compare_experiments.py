@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import yaml
 
@@ -25,7 +26,18 @@ def main() -> None:
         metrics_path = ARTIFACTS / experiment_id / "epoch_metrics.csv"
         if not metrics_path.exists():
             continue
-        frame = pd.read_csv(metrics_path)
+        frame = pd.read_csv(metrics_path).sort_values("epoch").reset_index(drop=True)
+        target_epochs = int(config["training"]["epochs"])
+        expected_epochs = np.arange(1, target_epochs + 1)
+        if frame["epoch"].duplicated().any():
+            raise ValueError(f"Hay épocas duplicadas en {experiment_id}")
+        if len(frame) == target_epochs and not np.array_equal(
+            frame["epoch"].to_numpy(), expected_epochs
+        ):
+            raise ValueError(f"La secuencia de épocas está incompleta en {experiment_id}")
+        numeric = frame.select_dtypes(include="number")
+        if frame.isna().any().any() or not np.isfinite(numeric.to_numpy()).all():
+            raise ValueError(f"Hay métricas faltantes o no finitas en {experiment_id}")
         frame["experiment"] = experiment_id
         frames.append(frame)
         final = frame.iloc[-1]
@@ -55,8 +67,8 @@ def main() -> None:
         / 3600
     )
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
-    combined.to_csv(ARTIFACTS / "all_epoch_metrics.csv", index=False)
-    summary.to_csv(ARTIFACTS / "comparison_summary.csv", index=False)
+    combined.to_csv(ARTIFACTS / "all_epoch_metrics.csv", index=False, lineterminator="\n")
+    summary.to_csv(ARTIFACTS / "comparison_summary.csv", index=False, lineterminator="\n")
 
     colors = {
         "baseline_bce": "#4A4E8F",
@@ -130,7 +142,7 @@ def main() -> None:
         "estimated_remaining_cpu_hours": float(summary["estimated_remaining_hours"].sum()),
     }
     (ARTIFACTS / "comparison_status.json").write_text(
-        json.dumps(status, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(status, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n"
     )
     print(summary.to_string(index=False))
     print(json.dumps(status, ensure_ascii=False))

@@ -43,8 +43,13 @@
     metricHost.appendChild(row);
   });
   document.querySelector("#training-state").textContent = data.training_complete
-    ? "Entrenamiento completo: interpretar la trayectoria total."
+    ? `Fase 8 completa · modelo provisional: ${data.selected_experiment}.`
     : "Resultado parcial: la comparación final sigue bloqueada.";
+
+  if (data.phase8_complete && !data.gallery_ready) {
+    document.querySelector("#learning-limit").textContent =
+      "A y C aprendieron personajes; todavía falta demostrar novedad frente al entrenamiento.";
+  }
 
   if (data.gallery_ready) {
     document.querySelectorAll("[data-src]").forEach((image) => { image.src = image.dataset.src; });

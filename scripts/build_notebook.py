@@ -36,7 +36,7 @@ cells = [
 Deep Learning · 2026
 
 > **Integrantes:** Pablo Daniel Barillas Moreno · Wilson Alejandro Calderón  
-> **Estado:** fase 7 preparada para Google Colab — entrenamiento aún en 1 de 60 épocas.
+> **Estado:** fase 8 completada — A/B/C alcanzaron 60/60 épocas; C es la selección provisional.
 > **Regla principal:** ninguna imagen final puede proceder de un generador externo.
 """
     ),
@@ -418,43 +418,45 @@ display(IPyImage(filename=str(ROOT / "artifacts" / "smoke_test" / "smoke_trainin
     ),
     md(
         r"""
-## 9. Avance real de la fase 4
+## 9. Resultados completos y fase 8
 
-Los tres experimentos ya procesaron una época completa sobre las 4,096 imágenes (`64 pasos × batch 64`). Se conservaron el checkpoint reanudable, las métricas por paso y época, y la rejilla del mismo ruido fijo.
+Los tres experimentos alcanzaron las **60 épocas** sobre las mismas 4,096 imágenes. La auditoría consolidó 180 registros por época y 11,520 pasos, sin duplicados, faltantes ni valores no finitos.
 
-<div class="callout gold"><strong>Lectura correcta.</strong> Una época verifica que el protocolo completo funciona, pero no permite seleccionar el mejor modelo. Además, BCE y hinge tienen escalas de pérdida distintas, por lo que sus valores no deben compararse como si fueran una misma métrica.</div>
+<div class="callout gold"><strong>Lectura correcta.</strong> BCE y hinge tienen escalas distintas; la decisión se apoya en la trayectoria del mismo ruido fijo, diversidad, logits y revisión visual, no en comparar directamente las magnitudes de sus pérdidas.</div>
 """
     ),
     code(
         r'''
-comparison_path = ROOT / "artifacts" / "experiments" / "comparison_summary.csv"
-status_path = ROOT / "artifacts" / "experiments" / "comparison_status.json"
-if not comparison_path.exists() or not status_path.exists():
-    raise FileNotFoundError("Ejecute primero los experimentos y scripts/compare_experiments.py")
+analysis_path = ROOT / "artifacts" / "phase8" / "experiment_analysis.csv"
+status_path = ROOT / "artifacts" / "phase8" / "phase8_analysis.json"
+if not analysis_path.exists() or not status_path.exists():
+    raise FileNotFoundError("Ejecute primero scripts/analyze_phase8.py")
 
-phase4_summary = pd.read_csv(comparison_path)
+phase8_summary = pd.read_csv(analysis_path)
 with open(status_path, encoding="utf-8") as file:
-    PHASE4_STATUS = json.load(file)
+    PHASE8 = json.load(file)
 
 expected = {"baseline_bce", "hinge_loss", "bce_spectral_norm"}
-assert set(phase4_summary["experiment"]) == expected
-assert (phase4_summary["completed_epochs"] >= 1).all()
+assert PHASE8["status"] == "passed"
+assert set(phase8_summary["experiment"]) == expected
+assert (phase8_summary["completed_epochs"] == 60).all()
 
-display(phase4_summary[[
-    "experiment", "completed_epochs", "loss_d", "loss_g", "real_logit",
-    "fake_logit_g", "fixed_pairwise_l2", "mean_epoch_seconds"
+display(phase8_summary[[
+    "experiment", "completed_epochs", "final_loss_d", "final_loss_g",
+    "final_real_logit", "final_fake_logit_g", "final_diversity",
+    "tail10_diversity_mean", "near_zero_loss_d_epochs", "collapse_signal"
 ]].style.format({
-    "loss_d": "{:.4f}", "loss_g": "{:.4f}", "real_logit": "{:.4f}",
-    "fake_logit_g": "{:.4f}", "fixed_pairwise_l2": "{:.4f}",
-    "mean_epoch_seconds": "{:.1f}"
+    "final_loss_d": "{:.4f}", "final_loss_g": "{:.4f}",
+    "final_real_logit": "{:.4f}", "final_fake_logit_g": "{:.4f}",
+    "final_diversity": "{:.4f}", "tail10_diversity_mean": "{:.4f}"
 }).hide(axis="index"))
 
 display(HTML(f"""
 <div class="kpis">
-  <div class="kpi"><span>Experimentos iniciados</span><strong>{PHASE4_STATUS['experiments_available']} / 3</strong></div>
-  <div class="kpi"><span>Progreso por corrida</span><strong>1 / {PHASE4_STATUS['target_epochs']}</strong></div>
-  <div class="kpi"><span>Cómputo CPU restante</span><strong>≈ {PHASE4_STATUS['estimated_remaining_cpu_hours']:.1f} h</strong></div>
-  <div class="kpi"><span>Selección final</span><strong>Pendiente</strong></div>
+  <div class="kpi"><span>Experimentos auditados</span><strong>{PHASE8['experiments']} / 3</strong></div>
+  <div class="kpi"><span>Progreso por corrida</span><strong>{PHASE8['target_epochs']} / {PHASE8['target_epochs']}</strong></div>
+  <div class="kpi"><span>Registros válidos</span><strong>{PHASE8['epoch_rows']} + {PHASE8['step_rows']}</strong></div>
+  <div class="kpi"><span>Selección provisional</span><strong>{PHASE8['selected_experiment']}</strong></div>
 </div>
 """))
 '''
@@ -462,43 +464,38 @@ display(HTML(f"""
     code(
         r'''
 display(IPyImage(
-    filename=str(ROOT / "artifacts" / "experiments" / "latest_fixed_noise_comparison.png"),
+    filename=str(ROOT / "artifacts" / "phase8" / "fixed_noise_milestones.png"),
     width=1150,
 ))
 display(IPyImage(
-    filename=str(ROOT / "artifacts" / "experiments" / "experiment_comparison.png"),
+    filename=str(ROOT / "artifacts" / "phase8" / "phase8_diagnostics.png"),
     width=1050,
 ))
 '''
     ),
     md(
         r"""
-### 9.1 Interpretación provisional
+### 9.1 Interpretación de la trayectoria completa
 
-- Las tres corridas terminaron la época 1 con métricas finitas y checkpoint válido.
-- El discriminador ya separa con fuerza datos reales y falsos en las tres variantes; es una señal de desbalance temprano que debe seguirse en las rejillas y logits.
-- `hinge_loss` presenta la mayor distancia media entre muestras del ruido fijo (**0.0860**), pero este único dato todavía no demuestra mejor diversidad.
-- Las rejillas continúan dominadas por textura de alta frecuencia y no contienen personajes reconocibles. Presentarlas como resultado final sería incorrecto.
-- Las épocas medidas tomaron entre 184 y 205 segundos en CPU; completar las 59 restantes de cada corrida requiere aproximadamente 9.4 horas en este equipo.
+- `baseline_bce` aprendió personajes reconocibles y conservó diversidad: terminó en **0.2585**, con media **0.2508** en las últimas diez épocas.
+- `hinge_loss` colapsó hacia una plantilla casi única: terminó en **0.0136** y acumuló **23 épocas** con `loss_D < 1e-3`. La hipótesis B queda rechazada bajo esta configuración.
+- `bce_spectral_norm` sostuvo la mayor diversidad final (**0.2659**) y media en las últimas diez épocas (**0.2671**), junto con la mejor variedad cromática observada.
+- Por ello se selecciona provisionalmente **C · BCE + spectral normalization** para las fases 9–10.
 
-La reanudación secuencial se ejecuta con:
-
-```powershell
-python scripts\train_all.py --epochs 60 --device auto
-```
+La selección todavía debe confirmarse con vecinos ResNet18, MSE y el análisis de 200 candidatos. La distancia L2 del ruido fijo es un indicador útil, no una métrica perceptual definitiva.
 """
     ),
     md(
         r"""
-## 10. Evidencias que deberá completar el entrenamiento
+## 10. Evidencias para confirmar la selección
 
 ### 10.1 Rejilla de ruido fijo
 
-Se usarán los mismos 16 vectores en las épocas 0, 5, 10, 20, 40 y 60.
+Se conservaron los mismos 16 vectores en las épocas 0, 5, 10, 20, 40 y 60; la figura anterior permite seguir su evolución sin cambiar la entrada latente.
 
 ### 10.2 Curvas interpretadas
 
-Se registrarán pérdidas de G y D, logits medios sobre datos reales y falsos, y tiempo por época. Las curvas no se interpretarán como si ambas pérdidas debieran disminuir juntas.
+Se registraron pérdidas de G y D, logits medios sobre datos reales y falsos, diversidad fija y tiempo por época. Las curvas se interpretan como dinámica adversarial y no como si ambas pérdidas debieran disminuir juntas.
 
 ### 10.3 Vecinos más cercanos
 
@@ -523,7 +520,7 @@ Los nombres y clases de personaje se agregarán después de la selección como t
         r"""
 ## 12. Implementación de la fase 5
 
-El pipeline final ya está implementado, pero **no escribirá imágenes en `galeria/` mientras el checkpoint seleccionado tenga menos de 60 épocas**. Esta barrera evita confundir ruido temprano con personajes finales.
+El pipeline final ya está implementado, la condición de 60 épocas se cumplió y el checkpoint de `bce_spectral_norm` está disponible localmente. La ejecución permanece bloqueada únicamente hasta descargar los pesos oficiales de ResNet18.
 
 Cuando el entrenamiento esté completo, el flujo será:
 
@@ -579,21 +576,21 @@ python scripts\build_gallery.py --experiment <experimento_seleccionado>
 python scripts\validate_gallery.py
 ```
 
-<div class="callout gold"><strong>Resultado actual honesto.</strong> La prueba sintética del algoritmo aprobó, pero no constituye evidencia de la GAN. La galería seguirá vacía hasta completar el entrenamiento, comparar A/B/C y seleccionar un checkpoint defendible.</div>
+<div class="callout gold"><strong>Resultado actual honesto.</strong> La prueba sintética del algoritmo aprobó y la comparación A/B/C ya seleccionó C provisionalmente. La galería sigue vacía porque aún falta descargar ResNet18, ejecutar los vecinos y auditar los 200 candidatos reales.</div>
 """
     ),
     md(
         r"""
-## 13. Estado actual y fase 7
+## 13. Estado actual y fase 8
 
-<div class="callout magic"><strong>Entrenamiento preparado para Colab.</strong> El notebook <code>02_entrenamiento_colab.ipynb</code> restaura checkpoints, usa CUDA y refleja el estado crítico a Google Drive al terminar cada época. Los tres experimentos permanecen en 1/60 hasta ejecutarlo; por ello todavía no existe un modelo seleccionado ni una galería válida.</div>
+<div class="callout magic"><strong>Entrenamiento y análisis completos.</strong> Los tres experimentos llegaron a 60/60 en CUDA. La auditoría favorece provisionalmente <code>bce_spectral_norm</code>: mantiene diversidad final de 0.2659, mientras hinge cae a 0.0136 y muestra colapso de modo.</div>
 
 ### Siguiente fase
 
-- ejecutar <code>notebooks/02_entrenamiento_colab.ipynb</code> con GPU;
-- reanudar los tres experimentos desde la época 2 hasta la 60;
-- pasar a la fase 8 para interpretar pérdidas, logits, diversidad y muestras por época;
-- actualizar automáticamente las presentaciones HTML y PDF con la evidencia completa.
+- descargar los pesos oficiales de ResNet18 al iniciar la fase 9;
+- ejecutar los vecinos más cercanos con ResNet18 y MSE usando el checkpoint C local;
+- generar 200 candidatos y seleccionar 10 con el criterio declarado;
+- guardar vectores <code>z</code>, manifiesto y evidencia de regeneración antes de cerrar la entrega.
 
 ### Referencias metodológicas
 
@@ -616,5 +613,6 @@ notebook = nbf.v4.new_notebook(
         "title": "Eryndor: Guardianes del Velo - Proyecto GAN",
     },
 )
-nbf.write(notebook, OUTPUT)
+with OUTPUT.open("w", encoding="utf-8", newline="\n") as file:
+    nbf.write(notebook, file)
 print(f"Notebook creado: {OUTPUT}")

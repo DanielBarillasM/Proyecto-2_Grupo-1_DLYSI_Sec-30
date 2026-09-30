@@ -35,6 +35,9 @@ def load_data() -> dict[str, object]:
     config = yaml.safe_load((ROOT / "configs" / "experiments.yaml").read_text(encoding="utf-8"))
     dataset = json.loads((ROOT / "artifacts" / "metrics" / "dataset_summary.json").read_text(encoding="utf-8"))
     comparison = pd.read_csv(ROOT / "artifacts" / "experiments" / "comparison_summary.csv")
+    phase8 = json.loads(
+        (ROOT / "artifacts" / "phase8" / "phase8_analysis.json").read_text(encoding="utf-8")
+    )
     target = int(config["training"]["epochs"])
     experiment_labels = {
         "baseline_bce": "A · BCE base",
@@ -75,6 +78,9 @@ def load_data() -> dict[str, object]:
         "training_complete": all(value >= target for value in completed.values()),
         "completed_epochs": completed,
         "minimum_epoch": min(completed.values()),
+        "phase8_complete": phase8.get("status") == "passed",
+        "selected_experiment": phase8["selected_experiment"],
+        "selection_scope": phase8["selection_scope"],
         "dataset": {
             "images": int(dataset["image_count"]),
             "resolution": "64 × 64",
@@ -115,8 +121,8 @@ def validate_html(data: dict[str, object]) -> dict[str, object]:
         PRESENTATION / "assets" / "presentation.js",
         PRESENTATION / "fonts" / "FreeSans.ttf",
         ROOT / "artifacts" / "dataset" / "dataset_contact_sheet.png",
-        ROOT / "artifacts" / "experiments" / "latest_fixed_noise_comparison.png",
-        ROOT / "artifacts" / "experiments" / "experiment_comparison.png",
+        ROOT / "artifacts" / "phase8" / "fixed_noise_milestones.png",
+        ROOT / "artifacts" / "phase8" / "phase8_diagnostics.png",
     ]
     missing = [path.relative_to(ROOT).as_posix() for path in required if not path.exists()]
     if parser.slides != 12 or parser.titles != 11:
@@ -129,6 +135,8 @@ def validate_html(data: dict[str, object]) -> dict[str, object]:
         "slides": parser.slides,
         "titled_slides": parser.titles,
         "training_complete": data["training_complete"],
+        "phase8_complete": data["phase8_complete"],
+        "selected_experiment": data["selected_experiment"],
         "gallery_ready": data["gallery_ready"],
         "keyboard_navigation": True,
         "print_layout": "16:9, una escena por página",
@@ -142,11 +150,14 @@ def main() -> None:
     DATA_JS.write_text(
         "window.ERYNDOR_DATA = " + json.dumps(data, ensure_ascii=False, indent=2) + ";\n",
         encoding="utf-8",
+        newline="\n",
     )
     status = validate_html(data)
     output = ROOT / "artifacts" / "presentation" / "html_status.json"
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(status, ensure_ascii=False, indent=2), encoding="utf-8")
+    output.write_text(
+        json.dumps(status, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n"
+    )
     print(json.dumps(status, ensure_ascii=False, indent=2))
 
 

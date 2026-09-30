@@ -132,13 +132,13 @@
     <section class="slide" id="slide-6" data-title="Ruido fijo" aria-hidden="true">
       <div class="slide-shell image-evidence">
         <div class="chapter-number">05</div>
-        <div class="figure-frame wide"><img src="../artifacts/experiments/latest_fixed_noise_comparison.png" alt="Comparación del mismo ruido fijo en los tres experimentos"></div>
+        <div class="figure-frame wide"><img src="../artifacts/phase8/fixed_noise_milestones.png" alt="Hitos del mismo ruido fijo en los tres experimentos"></div>
         <aside class="evidence-note">
           <p class="section-key">Evidencia 1</p>
           <h2 class="slide-title">El mismo ruido a través del tiempo</h2>
-          <p class="epoch-mark"><span data-bind="minimum_epoch">1</span><small>/ <span data-bind="target_epochs">60</span> épocas</small></p>
-          <p>Las rejillas actuales siguen dominadas por textura de alta frecuencia; todavía no hay personajes reconocibles.</p>
-          <strong>Una época valida el pipeline, no la calidad final.</strong>
+          <p class="epoch-mark"><span data-bind="minimum_epoch">60</span><small>/ <span data-bind="target_epochs">60</span> épocas</small></p>
+          <p>A y C forman personajes reconocibles; B converge a una plantilla casi única con textura de alta frecuencia.</p>
+          <strong>El ruido fijo revela progreso y colapso sin cambiar la entrada.</strong>
         </aside>
       </div>
     </section>
@@ -146,12 +146,12 @@
     <section class="slide" id="slide-7" data-title="Curvas" aria-hidden="true">
       <div class="slide-shell image-evidence curves">
         <div class="chapter-number">06</div>
-        <div class="figure-frame wide"><img src="../artifacts/experiments/experiment_comparison.png" alt="Curvas y métricas comparadas de los experimentos"></div>
+        <div class="figure-frame wide"><img src="../artifacts/phase8/phase8_diagnostics.png" alt="Diagnóstico completo de los tres experimentos"></div>
         <aside class="evidence-note">
           <p class="section-key">Evidencia 2</p>
           <h2 class="slide-title">Dinámica adversarial observada</h2>
           <div id="experiment-metrics" class="mini-table"></div>
-          <p>D separó rápido reales y falsos. BCE y hinge tienen escalas distintas: una sola época no permite un ranking.</p>
+          <p>BCE y hinge tienen escalas distintas. C sostiene la mayor diversidad final; B muestra dominio prolongado de D y colapso.</p>
           <strong id="training-state">Resultado parcial</strong>
         </aside>
       </div>
@@ -163,7 +163,7 @@
         <p class="section-key">Fallos y controles</p>
         <h2 class="slide-title">La estabilidad también se demuestra declarando límites</h2>
         <div class="decision-grid">
-          <article><h3>Señales observadas</h3><ul><li>D dominante al inicio.</li><li>Rejillas todavía ruidosas.</li><li>Mode collapse aún no diagnosticable.</li></ul></article>
+          <article><h3>Señales observadas</h3><ul><li>B: 23 épocas con loss D casi nula.</li><li>B: diversidad final 0.0136.</li><li>A y C conservan personajes variados.</li></ul></article>
           <article><h3>Controles implementados</h3><ul><li>Checkpoint rodante cada época.</li><li>Ruido fijo común y RNG restaurable.</li><li>Galería bloqueada antes de época 60.</li><li>Vecinos ResNet18 y regeneración exacta.</li></ul></article>
         </div>
         <blockquote>Un resultado que no mejora también es válido si el control y el análisis son honestos.</blockquote>
@@ -177,7 +177,7 @@
         <h2 class="slide-title">Diez guardianes de Eryndor</h2>
         <div class="pending-panel" id="gallery-pending">
           <span class="pending-rune">◇</span><h3>Evidencia pendiente</h3>
-          <p>Se requieren tres checkpoints de 60 épocas y un modelo seleccionado.</p>
+          <p>El entrenamiento terminó y C fue seleccionado provisionalmente. Su checkpoint está disponible; falta descargar ResNet18 y auditar 200 candidatos.</p>
           <p class="status-line" id="epoch-status"></p>
         </div>
         <div class="gallery-ready" id="gallery-ready" hidden>
@@ -210,8 +210,8 @@
         <p class="section-key">Alcance actual</p>
         <h2 class="slide-title">Lo que sabemos y lo que todavía no</h2>
         <div class="conclusion-columns">
-          <div><h3>Demostrado</h3><ul><li>Dataset reproducible, único y acreditado.</li><li>DCGAN, BCE, hinge y spectral norm con gradientes finitos.</li><li>Checkpoints que restauran estado y ruido.</li><li>Selección y vecinos bloquean resultados prematuros.</li></ul></div>
-          <div><h3>Limitaciones</h3><ul><li>Una sola pose y bases anatómicas compartidas.</li><li>Embeddings ImageNet aplicados a pixel art.</li><li id="learning-limit">Aún no hay evidencia para afirmar que la GAN aprendió personajes.</li></ul><p id="reflection"><strong>Reflexión pendiente:</strong> se responderá al identificar el personaje más cercano a una imagen real.</p></div>
+          <div><h3>Demostrado</h3><ul><li>Dataset reproducible, único y acreditado.</li><li>A/B/C completaron 60 épocas sin métricas inválidas.</li><li>Hinge colapsó bajo esta configuración.</li><li>C ofrece el mejor equilibrio provisional.</li></ul></div>
+          <div><h3>Limitaciones</h3><ul><li>Una sola pose y bases anatómicas compartidas.</li><li>La diversidad L2 no sustituye una métrica perceptual.</li><li id="learning-limit">A y C aprendieron personajes; todavía falta demostrar novedad frente al entrenamiento.</li></ul><p id="reflection"><strong>Reflexión pendiente:</strong> se responderá al identificar el personaje más cercano a una imagen real.</p></div>
         </div>
       </div>
     </section>
@@ -224,10 +224,10 @@
         <div class="matrix-table" role="table" aria-label="Matriz de evidencias">
           <div class="matrix-head" role="row"><span>Evidencia</span><span>Escena</span><span>Conclusión</span><span>Limitación</span></div>
           <div role="row"><b>Universo y datos</b><span>2–3</span><span>Coherentes, abiertos y auditados.</span><span>Una pose compartida.</span></div>
-          <div role="row"><b>Arquitectura</b><span>4</span><span>Contratos y checkpoints validados.</span><span>Calidad final pendiente.</span></div>
-          <div role="row"><b>Pérdida y estabilidad</b><span>5–8</span><span>A/B/C cambia una variable.</span><span id="matrix-training-limit">Estado 1/60.</span></div>
-          <div role="row"><b>Ruido fijo</b><span>6</span><span>Textura temprana visible.</span><span>Faltan hitos posteriores.</span></div>
-          <div role="row"><b>Curvas</b><span>7–8</span><span>D domina al inicio.</span><span>Una época no basta.</span></div>
+          <div role="row"><b>Arquitectura</b><span>4</span><span>Contratos y checkpoints validados.</span><span>DCGAN limitada a 64 × 64.</span></div>
+          <div role="row"><b>Pérdida y estabilidad</b><span>5–8</span><span>A/B/C completados y C provisional.</span><span id="matrix-training-limit">Trayectorias completas.</span></div>
+          <div role="row"><b>Ruido fijo</b><span>6</span><span>Hitos 0, 5, 10, 20, 40 y 60.</span><span>L2 es solo un proxy.</span></div>
+          <div role="row"><b>Curvas</b><span>7–8</span><span>Hinge colapsa; C sostiene diversidad.</span><span>Pérdidas no comparables entre familias.</span></div>
           <div role="row"><b>Galería + 10/200</b><span>9</span><span id="matrix-gallery">Pipeline listo y bloqueo correcto.</span><span id="matrix-gallery-limit">Sin PNG finales.</span></div>
           <div role="row"><b>Vecinos</b><span>10</span><span id="matrix-neighbors">Código probado sin fabricar resultados.</span><span>ResNet18 no es específica de pixel art.</span></div>
           <div role="row"><b>Reflexión</b><span>11</span><span>Alcance declarado con honestidad.</span><span>Depende de la galería validada.</span></div>

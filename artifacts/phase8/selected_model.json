@@ -1,0 +1,7 @@
+{
+  "experiment": "bce_spectral_norm",
+  "checkpoint": "checkpoints/bce_spectral_norm/latest.pt",
+  "epoch": 60,
+  "status": "selected_provisionally",
+  "next_validation": "nearest_neighbors_and_200_candidate_gallery"
+}

@@ -1,0 +1,41 @@
+{
+  "status": "passed",
+  "phase": 8,
+  "target_epochs": 60,
+  "experiments": 3,
+  "epoch_rows": 180,
+  "step_rows": 11520,
+  "missing_values": 0,
+  "nonfinite_values": 0,
+  "duplicate_epochs": 0,
+  "duplicate_steps": 0,
+  "memory_mb": 0.8572,
+  "milestones": [
+    0,
+    5,
+    10,
+    20,
+    40,
+    60
+  ],
+  "selected_experiment": "bce_spectral_norm",
+  "selected_checkpoint": "checkpoints/bce_spectral_norm/latest.pt",
+  "selection_scope": "provisional para fases 9–10; faltan vecinos y 200 candidatos",
+  "selection_basis": [
+    "diversidad media final 0.2671, frente a 0.2508 del baseline",
+    "diversidad final 0.2659 sin señal de colapso",
+    "rejillas 20–60 con personajes reconocibles y mayor variedad cromática",
+    "hinge descartado: 23 épocas con loss_D < 1e-3 y diversidad final 0.0136"
+  ],
+  "conclusions": {
+    "baseline_bce": "Aprendizaje útil y estable; alternativa defendible con diversidad algo menor.",
+    "hinge_loss": "Hipótesis rechazada: colapso de modo y dominio prolongado de D.",
+    "bce_spectral_norm": "Mejor equilibrio entre reconocimiento, variedad y diversidad sostenida."
+  },
+  "limitations": [
+    "La distancia L2 sobre ruido fijo es un proxy, no una métrica perceptual definitiva.",
+    "Las pérdidas BCE y hinge no son comparables por magnitud.",
+    "La selección debe confirmarse con vecinos ResNet18, MSE y 200 candidatos.",
+    "Los checkpoints están disponibles localmente y respaldados en Drive, pero no se versionan en GitHub."
+  ]
+}

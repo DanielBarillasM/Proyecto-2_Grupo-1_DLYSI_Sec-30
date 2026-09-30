@@ -5,13 +5,16 @@ window.ERYNDOR_DATA = {
     "Wilson Alejandro Calderón"
   ],
   "target_epochs": 60,
-  "training_complete": false,
+  "training_complete": true,
   "completed_epochs": {
-    "baseline_bce": 1,
-    "hinge_loss": 1,
-    "bce_spectral_norm": 1
+    "baseline_bce": 60,
+    "hinge_loss": 60,
+    "bce_spectral_norm": 60
   },
-  "minimum_epoch": 1,
+  "minimum_epoch": 60,
+  "phase8_complete": true,
+  "selected_experiment": "bce_spectral_norm",
+  "selection_scope": "provisional para fases 9–10; faltan vecinos y 200 candidatos",
   "dataset": {
     "images": 4096,
     "resolution": "64 × 64",
@@ -26,29 +29,29 @@ window.ERYNDOR_DATA = {
     {
       "id": "baseline_bce",
       "label": "A · BCE base",
-      "epochs": 1,
-      "loss_d": 0.1156,
-      "loss_g": 8.5477,
-      "diversity": 0.0551,
-      "seconds": 184.4
+      "epochs": 60,
+      "loss_d": 0.0789,
+      "loss_g": 5.6369,
+      "diversity": 0.2585,
+      "seconds": 6.1
     },
     {
       "id": "hinge_loss",
       "label": "B · Hinge",
-      "epochs": 1,
-      "loss_d": 0.2482,
-      "loss_g": 15.2575,
-      "diversity": 0.086,
-      "seconds": 204.6
+      "epochs": 60,
+      "loss_d": 0.0,
+      "loss_g": 8.1271,
+      "diversity": 0.0136,
+      "seconds": 6.0
     },
     {
       "id": "bce_spectral_norm",
       "label": "C · BCE + spectral norm",
-      "epochs": 1,
-      "loss_d": 0.076,
-      "loss_g": 6.8625,
-      "diversity": 0.0618,
-      "seconds": 185.2
+      "epochs": 60,
+      "loss_d": 0.1905,
+      "loss_g": 7.0557,
+      "diversity": 0.2659,
+      "seconds": 6.4
     }
   ],
   "gallery_ready": false,
