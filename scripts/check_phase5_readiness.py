@@ -24,6 +24,7 @@ def main() -> None:
     target = int(config["training"]["epochs"])
     epochs: dict[str, int] = {}
     checkpoint_exists: dict[str, bool] = {}
+    checkpoint_epochs: dict[str, int | None] = {}
     reasons: list[str] = []
     for experiment in config["experiments"]:
         experiment_id = str(experiment["id"])
@@ -34,10 +35,25 @@ def main() -> None:
             completed = int(json.loads(status_path.read_text(encoding="utf-8"))["completed_epochs"])
         epochs[experiment_id] = completed
         checkpoint_exists[experiment_id] = checkpoint.exists()
+        checkpoint_epoch: int | None = None
+        if checkpoint.exists():
+            try:
+                checkpoint_epoch = int(
+                    torch.load(checkpoint, map_location="cpu", weights_only=False)["epoch"]
+                )
+            except Exception as error:
+                reasons.append(
+                    f"{experiment_id}: checkpoint ilegible ({type(error).__name__})"
+                )
+        checkpoint_epochs[experiment_id] = checkpoint_epoch
         if completed < target:
             reasons.append(f"{experiment_id}: {completed}/{target} épocas")
         if not checkpoint.exists():
             reasons.append(f"{experiment_id}: checkpoint ausente")
+        elif checkpoint_epoch is not None and checkpoint_epoch < target:
+            reasons.append(
+                f"{experiment_id}: checkpoint interno {checkpoint_epoch}/{target} épocas"
+            )
 
     weights = ResNet18_Weights.DEFAULT
     weight_name = Path(weights.url).name
@@ -51,6 +67,7 @@ def main() -> None:
         "target_epochs": target,
         "completed_epochs": epochs,
         "checkpoints_present": checkpoint_exists,
+        "checkpoint_epochs": checkpoint_epochs,
         "resnet18_weights": {
             "url": weights.url,
             "cache_file": weight_name,
@@ -58,9 +75,13 @@ def main() -> None:
         },
         "gallery_manifest_exists": gallery_manifest.exists(),
         "blocking_reasons": reasons,
-        "next_command": "python scripts/train_all.py --epochs 60 --device auto"
-        if any(value < target for value in epochs.values())
-        else "python scripts/build_gallery.py --experiment <id>",
+        "next_command": "restaurar checkpoints latest.pt de época 60"
+        if any(value is None or value < target for value in checkpoint_epochs.values())
+        else (
+            "python scripts/train_all.py --epochs 60 --device auto"
+            if any(value < target for value in epochs.values())
+            else "python scripts/build_gallery.py --experiment <id>"
+        ),
     }
     output = ROOT / "artifacts" / "gallery" / "readiness.json"
     write_json(output, payload)

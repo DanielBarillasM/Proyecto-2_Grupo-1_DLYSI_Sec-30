@@ -36,7 +36,7 @@ cells = [
 Deep Learning · 2026
 
 > **Integrantes:** Pablo Daniel Barillas Moreno · Wilson Alejandro Calderón  
-> **Estado:** fase 8 completada — A/B/C alcanzaron 60/60 épocas; C es la selección provisional.
+> **Estado:** fase 9 implementada — ResNet18 lista; falta restaurar el checkpoint C de época 60.
 > **Regla principal:** ninguna imagen final puede proceder de un generador externo.
 """
     ),
@@ -520,7 +520,7 @@ Los nombres y clases de personaje se agregarán después de la selección como t
         r"""
 ## 12. Implementación de la fase 5
 
-El pipeline final ya está implementado, la condición de 60 épocas se cumplió y el checkpoint de `bce_spectral_norm` está disponible localmente. La ejecución permanece bloqueada únicamente hasta descargar los pesos oficiales de ResNet18.
+El pipeline final ya está implementado y las métricas alcanzaron 60 épocas. La auditoría interna detectó que los tres `latest.pt` locales todavía contienen la época 1; por eso no se usarán para fabricar vecinos o galería. Los pesos oficiales de ResNet18 sí están disponibles.
 
 Cuando el entrenamiento esté completo, el flujo será:
 
@@ -557,7 +557,12 @@ display(HTML(f"""
 """))
 
 phase5_progress = pd.DataFrame([
-    {"Experimento": key, "Épocas": value, "Objetivo": PHASE5["target_epochs"]}
+    {
+        "Experimento": key,
+        "Métricas": value,
+        "Checkpoint": PHASE5["checkpoint_epochs"].get(key),
+        "Objetivo": PHASE5["target_epochs"],
+    }
     for key, value in PHASE5["completed_epochs"].items()
 ])
 display(phase5_progress.style.hide(axis="index"))
@@ -576,19 +581,65 @@ python scripts\build_gallery.py --experiment <experimento_seleccionado>
 python scripts\validate_gallery.py
 ```
 
-<div class="callout gold"><strong>Resultado actual honesto.</strong> La prueba sintética del algoritmo aprobó y la comparación A/B/C ya seleccionó C provisionalmente. La galería sigue vacía porque aún falta descargar ResNet18, ejecutar los vecinos y auditar los 200 candidatos reales.</div>
+<div class="callout gold"><strong>Resultado actual honesto.</strong> La prueba sintética aprobó y C fue seleccionado provisionalmente. La galería sigue vacía porque el checkpoint final no está versionado: el archivo local es de época 1 y debe reemplazarse por el respaldo de época 60 guardado en Drive.</div>
 """
     ),
     md(
         r"""
-## 13. Estado actual y fase 8
+## 13. Implementación de la fase 9
+
+La fase 9 evalúa las **16 muestras del ruido fijo**, sin adelantar la generación de 200 candidatos. Cada muestra se compara contra las 4,096 imágenes reales mediante ResNet18 sin la capa final, similitud coseno y MSE en píxeles.
+
+La regla `coseno ≥ 0.95` y `MSE ≤ 0.01` funciona únicamente como bandera de revisión. No constituye por sí sola una prueba de memorización.
+"""
+    ),
+    code(
+        r'''
+phase9_path = ROOT / "artifacts" / "phase9" / "readiness.json"
+if not phase9_path.exists():
+    raise FileNotFoundError("Ejecute scripts/check_phase9_readiness.py")
+with open(phase9_path, encoding="utf-8") as file:
+    PHASE9 = json.load(file)
+
+display(HTML(f"""
+<div class="kpis">
+  <div class="kpi"><span>Modelo</span><strong>{PHASE9['selected_experiment']}</strong></div>
+  <div class="kpi"><span>Checkpoint real</span><strong>{PHASE9['checkpoint_epoch']} / {PHASE9['target_epoch']}</strong></div>
+  <div class="kpi"><span>Dataset</span><strong>{PHASE9['dataset_manifest_rows']}</strong></div>
+  <div class="kpi"><span>ResNet18</span><strong>{'LISTA' if PHASE9['resnet18']['cached'] else 'PENDIENTE'}</strong></div>
+</div>
+"""))
+print(f"Estado fase 9: {PHASE9['status'].upper()}")
+for reason in PHASE9["blocking_reasons"]:
+    print(f"- {reason}")
+'''
+    ),
+    md(
+        r"""
+### 13.1 Ejecución pendiente del peso final
+
+Después de restaurar `checkpoints/bce_spectral_norm/latest.pt` desde Drive, debe verificarse que `torch.load(...)["epoch"] == 60` y ejecutar:
+
+```powershell
+python scripts\check_phase9_readiness.py
+python scripts\analyze_phase9_neighbors.py --device auto
+```
+
+Las salidas válidas serán `fixed_noise_neighbors.csv`, `fixed_noise_neighbors.png` y `phase9_summary.json` dentro de `artifacts/phase9/`.
+"""
+    ),
+    md(
+        r"""
+## 14. Estado actual y fase 9
 
 <div class="callout magic"><strong>Entrenamiento y análisis completos.</strong> Los tres experimentos llegaron a 60/60 en CUDA. La auditoría favorece provisionalmente <code>bce_spectral_norm</code>: mantiene diversidad final de 0.2659, mientras hinge cae a 0.0136 y muestra colapso de modo.</div>
 
+<div class="callout gold"><strong>Fase 9 preparada, ejecución bloqueada de forma segura.</strong> ResNet18 oficial ya está en caché y el dataset está completo. El único bloqueo es reemplazar el checkpoint C local de época 1 por el respaldo de época 60.</div>
+
 ### Siguiente fase
 
-- descargar los pesos oficiales de ResNet18 al iniciar la fase 9;
-- ejecutar los vecinos más cercanos con ResNet18 y MSE usando el checkpoint C local;
+- restaurar desde Drive el checkpoint C cuya época interna sea 60;
+- ejecutar los vecinos más cercanos con ResNet18 y MSE;
 - generar 200 candidatos y seleccionar 10 con el criterio declarado;
 - guardar vectores <code>z</code>, manifiesto y evidencia de regeneración antes de cerrar la entrega.
 

@@ -18,7 +18,7 @@ El repositorio LPC incluye arte bajo varias licencias abiertas. Se conservará `
 
 ## Arquitectura base
 
-> **Estado de implementación:** puntos 1–8 completados. A/B/C alcanzaron 60/60 épocas y la auditoría selecciona provisionalmente `bce_spectral_norm`. Los puntos 9–11 tienen infraestructura adelantada; el checkpoint C está disponible y falta descargar ResNet18 para vecinos y galería.
+> **Estado de implementación:** puntos 1–8 completados y punto 9 implementado. A/B/C alcanzaron 60/60 en sus métricas y la auditoría selecciona provisionalmente `bce_spectral_norm`. ResNet18 está disponible, pero el `latest.pt` local de C contiene la época 1; falta restaurar desde Drive el checkpoint de época 60 para ejecutar vecinos.
 
 ## Ejecución de la fase 7 en Colab
 
@@ -159,6 +159,29 @@ Las pérdidas de BCE y hinge no se comparan directamente por su distinta escala.
 
 Por ello, `bce_spectral_norm` es la selección provisional para las fases 9–10. La selección aún debe validarse con vecinos ResNet18, MSE en píxeles y el lote de 200 candidatos; la distancia L2 del ruido fijo es un proxy y no una métrica perceptual definitiva.
 
+## Implementación de fase 9
+
+La fase 9 quedó desacoplada de la galería final para no adelantar los puntos 10–11. `scripts/analyze_phase9_neighbors.py` toma las 16 muestras del ruido fijo del modelo C y busca para cada una su vecino más próximo entre las 4,096 imágenes reales.
+
+Protocolo:
+
+1. validar que la época interna de `latest.pt` sea 60;
+2. regenerar las 16 muestras desde el ruido fijo guardado en el checkpoint;
+3. extraer embeddings ResNet18 IMAGENET1K_V1 normalizados;
+4. buscar máxima similitud coseno por bloques;
+5. calcular MSE en píxeles para cada pareja;
+6. marcar para revisión —sin declararlo memorización automática— los casos con coseno ≥ 0.95 y MSE ≤ 0.01;
+7. guardar CSV, resumen JSON y figura lado a lado en `artifacts/phase9/`.
+
+Estado verificable de preparación:
+
+- dataset: 4,096/4,096, cero faltantes y cero hashes duplicados;
+- ResNet18 oficial: descargada y verificada en caché local;
+- checkpoint seleccionado: archivo presente, pero época interna 1/60;
+- ejecución con resultados: bloqueada correctamente hasta restaurar el checkpoint C final desde Drive.
+
+El notebook `02_entrenamiento_colab.ipynb` incorpora la comprobación y la ejecución CUDA, y respalda los artefactos de fase 9 en Drive.
+
 ## Implementación de fase 5
 
 La generación y auditoría de la galería quedó implementada con una precondición no negociable: el checkpoint elegido debe haber alcanzado las 60 épocas registradas. Si no se cumple, `build_gallery.py` termina antes de escribir PNG en `galeria/`.
@@ -179,7 +202,7 @@ La generación y auditoría de la galería quedó implementada con una precondic
 ### Estado verificable
 
 - Prueba sintética de filtrado, vecinos y selección: aprobada.
-- Métricas A/B/C: 60/60; el checkpoint seleccionado está disponible localmente y respaldado en Drive.
-- Pesos ResNet18: se descargarán desde la URL oficial de PyTorch en la primera ejecución final; no se permiten pesos aleatorios como sustituto.
+- Métricas A/B/C: 60/60; los checkpoints locales son de época 1 y los finales deben restaurarse desde Drive.
+- Pesos ResNet18: oficiales y presentes en la caché local; no se permiten pesos aleatorios como sustituto.
 - Tasa de selección que se declarará: `10/200 = 5%`.
 - Nombres y roles: asignados después de la selección para optar a la bonificación, sin intervenir en la métrica técnica.

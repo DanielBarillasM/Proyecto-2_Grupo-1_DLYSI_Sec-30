@@ -2,7 +2,7 @@
 
 Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG pixel art de aventura y magia mediante una GAN entrenada por el equipo.
 
-> **Estado actual:** fase 8 completada. Los tres experimentos alcanzaron 60/60 épocas en GPU y fueron auditados sin duplicados, faltantes ni valores no finitos. `bce_spectral_norm` es la selección provisional para las fases 9–10; su checkpoint está disponible y solo faltan los pesos oficiales de ResNet18 para iniciar vecinos y galería.
+> **Estado actual:** fase 9 implementada y auditada en preparación. Los tres experimentos alcanzaron 60/60 en sus métricas y `bce_spectral_norm` es la selección provisional. ResNet18 ya está en caché local, pero el `latest.pt` presente contiene internamente la época 1; debe restaurarse desde Drive el checkpoint C de época 60 antes de calcular vecinos reales.
 
 ## Resultado de esta fase
 
@@ -24,6 +24,9 @@ Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG p
 | Entrenamiento A / B / C | 60 / 60 / 60 épocas |
 | Auditoría de fase 8 | 180 épocas + 11,520 pasos válidos |
 | Modelo provisional | C · BCE + spectral normalization |
+| Pipeline de vecinos | Implementado: ResNet18 + coseno + MSE |
+| Checkpoint C local | Archivo presente, época interna 1/60 |
+| Pesos ResNet18 | Oficiales y disponibles en caché local |
 | Pipeline de selección | Smoke test sintético aprobado |
 | Galería final válida | Pendiente de vecinos y selección 10/200 |
 | Presentación PDF | 12 páginas, validación automática aprobada |
@@ -160,7 +163,28 @@ python scripts\compare_experiments.py
 
 El checkpoint completo se mantiene como archivo rodante para limitar el uso de disco; en las épocas 5, 10, 15, ..., 60 se conserva además una instantánea liviana del generador y su rejilla fija.
 
-## Galería y prueba de novedad — puntos 9 a 11 del plan
+## Fase 9: vecinos más cercanos
+
+[`scripts/analyze_phase9_neighbors.py`](scripts/analyze_phase9_neighbors.py) genera las 16 muestras del ruido fijo del checkpoint C y compara cada una contra las 4,096 imágenes de entrenamiento. Usa ResNet18 IMAGENET1K_V1 sin su capa final, embeddings normalizados y similitud coseno; el MSE en píxeles funciona como comprobación secundaria.
+
+La fase queda separada de la selección final: no genera los 200 candidatos ni escribe en `galeria/`. Produce `fixed_noise_neighbors.csv`, una figura lado a lado y un resumen JSON en `artifacts/phase9/`. Una regla declarada (`coseno ≥ 0.95` y `MSE ≤ 0.01`) solo marca casos para revisión y no se interpreta automáticamente como prueba de memorización.
+
+El control actual detectó correctamente:
+
+- dataset completo: 4,096 imágenes, cero faltantes y cero hashes duplicados;
+- pesos oficiales de ResNet18 disponibles;
+- checkpoint C local desactualizado: época interna 1/60.
+
+Después de restaurar desde Drive `checkpoints/bce_spectral_norm/latest.pt` de época 60:
+
+```powershell
+python scripts\check_phase9_readiness.py
+python scripts\analyze_phase9_neighbors.py --device auto
+```
+
+El notebook de Colab también incluye estas celdas y respalda `artifacts/phase9/` en Drive.
+
+## Galería y prueba de novedad — puntos 10 y 11 del plan
 
 La implementación cumple el protocolo obligatorio sin presentar resultados prematuros:
 
@@ -180,14 +204,14 @@ python scripts\check_phase5_readiness.py
 python scripts\smoke_test_evaluation.py
 ```
 
-Con C seleccionado provisionalmente y su checkpoint disponible localmente, el siguiente paso es ejecutar:
+Después de aprobar la fase 9, las fases 10–11 ejecutarán:
 
 ```powershell
 python scripts\build_gallery.py --experiment bce_spectral_norm
 python scripts\validate_gallery.py
 ```
 
-La primera ejecución final descargará una vez los pesos oficiales de ResNet18 si todavía no están en la caché de PyTorch. El programa nunca sustituye silenciosamente esos pesos por una red aleatoria.
+Los pesos oficiales de ResNet18 ya están en la caché de este equipo. En un runtime nuevo de Colab se descargarán una vez; el programa nunca los sustituye silenciosamente por una red aleatoria.
 
 > **Resultado actual honesto:** el smoke test usa datos sintéticos únicamente para validar filtrado, vecinos y selección. No crea imágenes en `galeria/` y no constituye evidencia de calidad de la GAN.
 
@@ -224,11 +248,11 @@ Cambios de seguridad para sesiones interrumpibles:
 - el notebook exige CUDA y verifica que no existan épocas duplicadas después de reanudar;
 - el descargador `scripts/fetch_lpc.py` funciona en Linux, Windows y Colab.
 
-La fase 7 ya terminó: los artefactos de métricas y muestras de A/B/C quedaron sincronizados. Los checkpoints pesados están disponibles localmente y respaldados en Drive, pero no se versionan en GitHub.
+La fase 7 ya terminó: los artefactos de métricas y muestras de A/B/C quedaron sincronizados. GitHub no versiona los checkpoints pesados; los `latest.pt` locales siguen en época 1 y el respaldo final de C debe restaurarse desde Drive para continuar.
 
 ## Trabajo pendiente antes de la entrega
 
-1. Ejecutar la fase 9: descargar ResNet18 y calcular vecinos más cercanos y MSE con el checkpoint C local.
+1. Restaurar desde Drive el checkpoint `bce_spectral_norm/latest.pt` cuya época interna sea 60 y ejecutar la fase 9.
 2. Ejecutar las fases 10–11: generar 200 candidatos, seleccionar 10 y guardar sus vectores `z` y manifiesto.
 3. Cerrar los puntos 12–14: README, notebook y presentación con la galería validada.
 4. Ejecutar la matriz de evidencias y validación integral del punto 15 antes de comprimir la entrega.
@@ -237,7 +261,7 @@ La fase 7 ya terminó: los artefactos de métricas y muestras de A/B/C quedaron 
 
 ```text
 .
-├── artifacts/               # Figuras y métricas, incluida la auditoría phase8/
+├── artifacts/               # Figuras y métricas, incluidas phase8/ y phase9/
 ├── checkpoints/             # Pesos y estados de optimizador
 ├── configs/experiments.yaml
 ├── data/raw/                # Clon LPC selectivo, no versionado
@@ -255,6 +279,8 @@ La fase 7 ya terminó: los artefactos de métricas y muestras de A/B/C quedaron 
 ├── scripts/train_all.py
 ├── scripts/compare_experiments.py
 ├── scripts/analyze_phase8.py
+├── scripts/check_phase9_readiness.py
+├── scripts/analyze_phase9_neighbors.py
 ├── scripts/check_phase5_readiness.py
 ├── scripts/smoke_test_evaluation.py
 ├── scripts/build_gallery.py

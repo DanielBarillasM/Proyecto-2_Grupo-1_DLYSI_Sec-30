@@ -3,5 +3,7 @@
   "checkpoint": "checkpoints/bce_spectral_norm/latest.pt",
   "epoch": 60,
   "status": "selected_provisionally",
+  "required_checkpoint_epoch": 60,
+  "local_checkpoint_validation": "see artifacts/phase9/readiness.json",
   "next_validation": "nearest_neighbors_and_200_candidate_gallery"
 }

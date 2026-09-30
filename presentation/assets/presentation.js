@@ -45,6 +45,8 @@
   document.querySelector("#training-state").textContent = data.training_complete
     ? `Fase 8 completa · modelo provisional: ${data.selected_experiment}.`
     : "Resultado parcial: la comparación final sigue bloqueada.";
+  document.querySelector("#phase9-checkpoint").textContent =
+    `${data.phase9_checkpoint_epoch}/${data.phase9_target_epoch}`;
 
   if (data.phase8_complete && !data.gallery_ready) {
     document.querySelector("#learning-limit").textContent =

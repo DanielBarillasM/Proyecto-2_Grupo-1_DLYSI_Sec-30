@@ -177,7 +177,7 @@
         <h2 class="slide-title">Diez guardianes de Eryndor</h2>
         <div class="pending-panel" id="gallery-pending">
           <span class="pending-rune">◇</span><h3>Evidencia pendiente</h3>
-          <p>El entrenamiento terminó y C fue seleccionado provisionalmente. Su checkpoint está disponible; falta descargar ResNet18 y auditar 200 candidatos.</p>
+          <p>El entrenamiento terminó y C fue seleccionado provisionalmente. El checkpoint local es de época 1/60; debe restaurarse el respaldo final antes de auditar 200 candidatos.</p>
           <p class="status-line" id="epoch-status"></p>
         </div>
         <div class="gallery-ready" id="gallery-ready" hidden>
@@ -194,7 +194,7 @@
         <h2 class="slide-title">Prueba de vecinos más cercanos</h2>
         <div class="pending-panel" id="neighbors-pending">
           <span class="pending-rune">⌁</span><h3>Evidencia pendiente</h3>
-          <p>ResNet18, similitud coseno, MSE y la figura lado a lado están implementados. Faltan diez imágenes GAN válidas.</p>
+          <p>ResNet18, similitud coseno, MSE y la figura lado a lado están implementados. ResNet18 ya está en caché; el checkpoint C local sigue en época <strong id="phase9-checkpoint">1/60</strong>.</p>
           <p>Tasa declarada: <strong data-bind="selection"></strong></p>
         </div>
         <div class="neighbors-ready" id="neighbors-ready" hidden>
@@ -229,7 +229,7 @@
           <div role="row"><b>Ruido fijo</b><span>6</span><span>Hitos 0, 5, 10, 20, 40 y 60.</span><span>L2 es solo un proxy.</span></div>
           <div role="row"><b>Curvas</b><span>7–8</span><span>Hinge colapsa; C sostiene diversidad.</span><span>Pérdidas no comparables entre familias.</span></div>
           <div role="row"><b>Galería + 10/200</b><span>9</span><span id="matrix-gallery">Pipeline listo y bloqueo correcto.</span><span id="matrix-gallery-limit">Sin PNG finales.</span></div>
-          <div role="row"><b>Vecinos</b><span>10</span><span id="matrix-neighbors">Código probado sin fabricar resultados.</span><span>ResNet18 no es específica de pixel art.</span></div>
+          <div role="row"><b>Vecinos</b><span>10</span><span id="matrix-neighbors">Pipeline listo; ejecución espera checkpoint 60.</span><span>ResNet18 no es específica de pixel art.</span></div>
           <div role="row"><b>Reflexión</b><span>11</span><span>Alcance declarado con honestidad.</span><span>Depende de la galería validada.</span></div>
         </div>
         <p class="source-line">Goodfellow et al. (2014) · Universal LPC Character Generator · LPC Style Guide · IA declarada en README</p>

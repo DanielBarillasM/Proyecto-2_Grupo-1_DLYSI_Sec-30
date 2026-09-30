@@ -6,6 +6,8 @@
   "training_complete": true,
   "phase8_complete": true,
   "selected_experiment": "bce_spectral_norm",
+  "phase9_ready": false,
+  "phase9_checkpoint_epoch": 1,
   "gallery_ready": false,
   "keyboard_navigation": true,
   "print_layout": "16:9, una escena por página",

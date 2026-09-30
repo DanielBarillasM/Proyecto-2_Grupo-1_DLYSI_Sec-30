@@ -127,7 +127,7 @@ ignore = shutil.ignore_patterns(
 )
 shutil.copytree(DRIVE_ROOT, RUNTIME_ROOT, dirs_exist_ok=True, ignore=ignore)
 
-for relative in (Path("checkpoints"), Path("artifacts/experiments")):
+for relative in (Path("checkpoints"), Path("artifacts/experiments"), Path("artifacts/phase8")):
     source = DRIVE_ROOT / relative
     if source.exists():
         shutil.copytree(source, RUNTIME_ROOT / relative, dirs_exist_ok=True)
@@ -337,6 +337,68 @@ else:
     ),
     md(
         r"""
+## 12. Fase 9 · vecinos más cercanos
+
+Esta sección usa el modelo C seleccionado en la fase 8 y las 16 entradas de ruido fijo. Cada salida se compara contra las 4,096 imágenes reales mediante ResNet18, similitud coseno y MSE. No genera todavía los 200 candidatos ni selecciona la galería final.
+
+El control lee la época **dentro** de `latest.pt`; un CSV en 60/60 no sustituye al checkpoint final.
+"""
+    ),
+    code(
+        r'''
+subprocess.run(
+    [sys.executable, "scripts/check_phase9_readiness.py"],
+    cwd=RUNTIME_ROOT,
+    check=True,
+)
+phase9_readiness = json.loads(
+    (RUNTIME_ROOT / "artifacts/phase9/readiness.json").read_text()
+)
+display(pd.DataFrame([{
+    "Modelo": phase9_readiness["selected_experiment"],
+    "Checkpoint": f'{phase9_readiness["checkpoint_epoch"]}/{phase9_readiness["target_epoch"]}',
+    "Dataset": phase9_readiness["dataset_manifest_rows"],
+    "ResNet18": "lista" if phase9_readiness["resnet18"]["cached"] else "se descargará",
+    "Estado": phase9_readiness["status"],
+}]))
+
+if phase9_readiness["checkpoint_epoch"] != TARGET_EPOCHS:
+    raise RuntimeError(
+        "Drive no contiene latest.pt de época 60 para bce_spectral_norm. "
+        "Restaure el respaldo final antes de continuar."
+    )
+'''
+    ),
+    code(
+        r'''
+subprocess.run(
+    [
+        sys.executable,
+        "scripts/analyze_phase9_neighbors.py",
+        "--device", "cuda",
+        "--feature-batch-size", "128",
+    ],
+    cwd=RUNTIME_ROOT,
+    check=True,
+)
+
+phase9_dir = RUNTIME_ROOT / "artifacts/phase9"
+drive_phase9 = DRIVE_ROOT / "artifacts/phase9"
+shutil.copytree(phase9_dir, drive_phase9, dirs_exist_ok=True)
+phase9_summary = json.loads((phase9_dir / "phase9_summary.json").read_text())
+display(pd.DataFrame([{
+    "Muestras": phase9_summary["sample_count"],
+    "Coseno medio": phase9_summary["cosine_similarity"]["mean"],
+    "MSE medio": phase9_summary["pixel_mse"]["mean"],
+    "Duplicados exactos": phase9_summary["exact_pixel_duplicate_count"],
+    "Banderas de revisión": phase9_summary["screening_flag_count"],
+}]).style.format(precision=4).hide(axis="index"))
+
+display(HTML('<div class="phase-note"><strong>Fase 9 ejecutada.</strong> Revise la figura de vecinos antes de iniciar los 200 candidatos.</div>'))
+'''
+    ),
+    md(
+        r"""
 ## Problemas frecuentes
 
 - **CUDA no disponible:** cambie el tipo de entorno a GPU y reinicie desde la sección 1.
@@ -359,6 +421,7 @@ notebook = nbf.v4.new_notebook(
     },
 )
 OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-nbf.write(notebook, OUTPUT)
+with OUTPUT.open("w", encoding="utf-8", newline="\n") as file:
+    nbf.write(notebook, file)
 print(f"Notebook creado: {OUTPUT}")
 

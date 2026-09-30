@@ -38,6 +38,9 @@ def load_data() -> dict[str, object]:
     phase8 = json.loads(
         (ROOT / "artifacts" / "phase8" / "phase8_analysis.json").read_text(encoding="utf-8")
     )
+    phase9 = json.loads(
+        (ROOT / "artifacts" / "phase9" / "readiness.json").read_text(encoding="utf-8")
+    )
     target = int(config["training"]["epochs"])
     experiment_labels = {
         "baseline_bce": "A · BCE base",
@@ -81,6 +84,10 @@ def load_data() -> dict[str, object]:
         "phase8_complete": phase8.get("status") == "passed",
         "selected_experiment": phase8["selected_experiment"],
         "selection_scope": phase8["selection_scope"],
+        "phase9_ready": phase9["status"] == "ready",
+        "phase9_checkpoint_epoch": phase9["checkpoint_epoch"],
+        "phase9_target_epoch": phase9["target_epoch"],
+        "phase9_resnet_cached": phase9["resnet18"]["cached"],
         "dataset": {
             "images": int(dataset["image_count"]),
             "resolution": "64 × 64",
@@ -137,6 +144,8 @@ def validate_html(data: dict[str, object]) -> dict[str, object]:
         "training_complete": data["training_complete"],
         "phase8_complete": data["phase8_complete"],
         "selected_experiment": data["selected_experiment"],
+        "phase9_ready": data["phase9_ready"],
+        "phase9_checkpoint_epoch": data["phase9_checkpoint_epoch"],
         "gallery_ready": data["gallery_ready"],
         "keyboard_navigation": True,
         "print_layout": "16:9, una escena por página",

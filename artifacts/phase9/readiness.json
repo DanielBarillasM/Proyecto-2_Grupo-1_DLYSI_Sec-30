@@ -1,0 +1,23 @@
+{
+  "status": "blocked",
+  "phase": 9,
+  "selected_experiment": "bce_spectral_norm",
+  "target_epoch": 60,
+  "checkpoint": "checkpoints/bce_spectral_norm/latest.pt",
+  "checkpoint_exists": true,
+  "checkpoint_epoch": 1,
+  "checkpoint_experiment": "bce_spectral_norm",
+  "checkpoint_error": null,
+  "dataset_manifest_rows": 4096,
+  "missing_training_images": 0,
+  "duplicate_training_hashes": 0,
+  "resnet18": {
+    "url": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
+    "cache_file": "resnet18-f37072fd.pth",
+    "cached": true
+  },
+  "blocking_reasons": [
+    "checkpoint bce_spectral_norm: época interna 1/60"
+  ],
+  "next_command": "restaurar checkpoints/bce_spectral_norm/latest.pt de época 60"
+}

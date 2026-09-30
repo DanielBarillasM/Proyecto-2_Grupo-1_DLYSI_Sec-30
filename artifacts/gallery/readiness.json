@@ -11,14 +11,21 @@
     "hinge_loss": true,
     "bce_spectral_norm": true
   },
+  "checkpoint_epochs": {
+    "baseline_bce": 1,
+    "hinge_loss": 1,
+    "bce_spectral_norm": 1
+  },
   "resnet18_weights": {
     "url": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
     "cache_file": "resnet18-f37072fd.pth",
-    "cached": false
+    "cached": true
   },
   "gallery_manifest_exists": false,
   "blocking_reasons": [
-    "pesos preentrenados ResNet18 aún no están en caché"
+    "baseline_bce: checkpoint interno 1/60 épocas",
+    "hinge_loss: checkpoint interno 1/60 épocas",
+    "bce_spectral_norm: checkpoint interno 1/60 épocas"
   ],
-  "next_command": "python scripts/build_gallery.py --experiment <id>"
+  "next_command": "restaurar checkpoints latest.pt de época 60"
 }

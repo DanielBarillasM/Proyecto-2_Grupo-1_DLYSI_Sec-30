@@ -267,7 +267,7 @@ def main() -> None:
             "La distancia L2 sobre ruido fijo es un proxy, no una métrica perceptual definitiva.",
             "Las pérdidas BCE y hinge no son comparables por magnitud.",
             "La selección debe confirmarse con vecinos ResNet18, MSE y 200 candidatos.",
-            "Los checkpoints están disponibles localmente y respaldados en Drive, pero no se versionan en GitHub.",
+            "Las métricas y rejillas están versionadas; los checkpoints finales deben restaurarse desde Drive porque Git los ignora.",
         ],
     }
     (OUTPUT_DIR / "phase8_analysis.json").write_text(
@@ -280,6 +280,8 @@ def main() -> None:
                 "checkpoint": analysis["selected_checkpoint"],
                 "epoch": target_epochs,
                 "status": "selected_provisionally",
+                "required_checkpoint_epoch": target_epochs,
+                "local_checkpoint_validation": "see artifacts/phase9/readiness.json",
                 "next_validation": "nearest_neighbors_and_200_candidate_gallery",
             },
             ensure_ascii=False,

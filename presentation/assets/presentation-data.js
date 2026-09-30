@@ -15,6 +15,10 @@ window.ERYNDOR_DATA = {
   "phase8_complete": true,
   "selected_experiment": "bce_spectral_norm",
   "selection_scope": "provisional para fases 9–10; faltan vecinos y 200 candidatos",
+  "phase9_ready": false,
+  "phase9_checkpoint_epoch": 1,
+  "phase9_target_epoch": 60,
+  "phase9_resnet_cached": true,
   "dataset": {
     "images": 4096,
     "resolution": "64 × 64",

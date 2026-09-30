@@ -36,6 +36,6 @@
     "La distancia L2 sobre ruido fijo es un proxy, no una métrica perceptual definitiva.",
     "Las pérdidas BCE y hinge no son comparables por magnitud.",
     "La selección debe confirmarse con vecinos ResNet18, MSE y 200 candidatos.",
-    "Los checkpoints están disponibles localmente y respaldados en Drive, pero no se versionan en GitHub."
+    "Las métricas y rejillas están versionadas; los checkpoints finales deben restaurarse desde Drive porque Git los ignora."
   ]
 }
