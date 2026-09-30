@@ -21,7 +21,9 @@
   });
 
   document.querySelector("#members").textContent = data.members.join(" · ");
-  document.querySelector("#gallery-cover-label").textContent = data.gallery_ready ? "Galería validada" : "Meta de galería";
+  document.querySelector("#gallery-cover-label").textContent = data.gallery_ready
+    ? "Galería validada"
+    : data.phase10_complete ? "Selección 10/200 validada" : "Meta de galería";
 
   const epochStatus = Object.entries(data.completed_epochs)
     .map(([name, epoch]) => `${name.replaceAll("_", " ")}: ${epoch}/${data.target_epochs}`)
@@ -47,17 +49,44 @@
     : "Resultado parcial: la comparación final sigue bloqueada.";
   document.querySelector("#phase9-checkpoint").textContent =
     `${data.phase9_checkpoint_epoch}/${data.phase9_target_epoch}`;
+  document.querySelector("#phase10-status").textContent = data.phase10_smoke_passed
+    ? `Prueba determinista: ${data.phase10_candidate_count} candidatos · ${data.phase10_selected_count} elegidos · ${data.phase10_selection_rate}`
+    : "La prueba de selección 10/200 requiere revisión.";
 
   if (data.phase8_complete && !data.gallery_ready) {
     document.querySelector("#learning-limit").textContent =
       "A y C aprendieron personajes; todavía falta demostrar novedad frente al entrenamiento.";
   }
 
+  if (data.phase9_complete) {
+    const phase9Image = document.querySelector("[data-phase9-src]");
+    phase9Image.src = phase9Image.dataset.phase9Src;
+    document.querySelector("#neighbors-pending").hidden = true;
+    document.querySelector("#phase9-ready").hidden = false;
+    document.querySelector("#matrix-neighbors").textContent =
+      `${data.phase9_exact_duplicates} duplicados y ${data.phase9_screening_flags} banderas de revisión.`;
+  }
+
+  if (data.phase10_complete && !data.gallery_ready) {
+    const phase10Image = document.querySelector("[data-phase10-src]");
+    phase10Image.src = phase10Image.dataset.phase10Src;
+    document.querySelector("#gallery-pending").hidden = true;
+    document.querySelector("#phase10-ready").hidden = false;
+    document.querySelector("#phase10-detail").textContent =
+      `${data.phase10_eligible} elegibles · coseno medio ${data.phase10_mean_similarity} · MSE medio ${data.phase10_mean_mse}. Fase 11 pendiente.`;
+    document.querySelector("#learning-limit").textContent =
+      `Los 10 seleccionados tienen ${data.phase10_exact_duplicates} duplicados exactos frente al entrenamiento.`;
+    document.querySelector("#reflection").innerHTML =
+      "<strong>Resultado:</strong> la regla técnica favoreció novedad y diversidad, aunque la pose y anatomía compartidas limitan la variedad estructural.";
+  }
+
   if (data.gallery_ready) {
     document.querySelectorAll("[data-src]").forEach((image) => { image.src = image.dataset.src; });
     document.querySelector("#gallery-pending").hidden = true;
+    document.querySelector("#phase10-ready").hidden = true;
     document.querySelector("#gallery-ready").hidden = false;
     document.querySelector("#neighbors-pending").hidden = true;
+    document.querySelector("#phase9-ready").hidden = true;
     document.querySelector("#neighbors-ready").hidden = false;
     document.querySelector("#learning-limit").textContent = "La galería validada se regenera con diferencia RGB máxima igual a cero.";
     document.querySelector("#reflection").innerHTML = `<strong>${data.hardest_character}</strong> fue el caso más difícil de defender como nuevo (coseno ${data.hardest_similarity}).`;

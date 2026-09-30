@@ -18,7 +18,7 @@ El repositorio LPC incluye arte bajo varias licencias abiertas. Se conservará `
 
 ## Arquitectura base
 
-> **Estado de implementación:** puntos 1–8 completados y punto 9 implementado. A/B/C alcanzaron 60/60 en sus métricas y la auditoría selecciona provisionalmente `bce_spectral_norm`. ResNet18 está disponible, pero el `latest.pt` local de C contiene la época 1; falta restaurar desde Drive el checkpoint de época 60 para ejecutar vecinos.
+> **Estado de implementación:** puntos 1–10 completados. El checkpoint final de `bce_spectral_norm` fue verificado en época 60; la fase 9 auditó 16 muestras contra 4,096 imágenes y la fase 10 evaluó 200 candidatos reales para seleccionar 10. La fase 11 queda pendiente para persistir la galería, los vectores latentes y el manifiesto reproducible.
 
 ## Ejecución de la fase 7 en Colab
 
@@ -157,7 +157,7 @@ Los tres experimentos ejecutaron 60 épocas sobre las 4,096 imágenes (`64 pasos
 
 Las pérdidas de BCE y hinge no se comparan directamente por su distinta escala. El baseline produce personajes reconocibles y mantiene diversidad; hinge presenta colapso de modo, diversidad final de 0.0136 y 23 épocas con `loss_D < 1e-3`; la variante C mantiene la mayor diversidad final (0.2659) y media en las últimas diez épocas (0.2671), además de mayor variedad cromática en la revisión de hitos.
 
-Por ello, `bce_spectral_norm` es la selección provisional para las fases 9–10. La selección aún debe validarse con vecinos ResNet18, MSE en píxeles y el lote de 200 candidatos; la distancia L2 del ruido fijo es un proxy y no una métrica perceptual definitiva.
+Por ello, `bce_spectral_norm` fue la selección para las fases 9–10. La validación posterior con vecinos ResNet18, MSE en píxeles y 200 candidatos confirmó cero duplicados exactos; la distancia L2 del ruido fijo se conserva únicamente como proxy, no como métrica perceptual definitiva.
 
 ## Implementación de fase 9
 
@@ -173,14 +173,32 @@ Protocolo:
 6. marcar para revisión —sin declararlo memorización automática— los casos con coseno ≥ 0.95 y MSE ≤ 0.01;
 7. guardar CSV, resumen JSON y figura lado a lado en `artifacts/phase9/`.
 
-Estado verificable de preparación:
+Resultado verificable:
 
 - dataset: 4,096/4,096, cero faltantes y cero hashes duplicados;
 - ResNet18 oficial: descargada y verificada en caché local;
-- checkpoint seleccionado: archivo presente, pero época interna 1/60;
-- ejecución con resultados: bloqueada correctamente hasta restaurar el checkpoint C final desde Drive.
+- checkpoint seleccionado: época interna 60/60 y SHA-256 verificado;
+- coseno medio `0.7660`, MSE medio `0.02615`, cero duplicados exactos y cero banderas de revisión.
 
 El notebook `02_entrenamiento_colab.ipynb` incorpora la comprobación y la ejecución CUDA, y respalda los artefactos de fase 9 en Drive.
+
+## Implementación de fase 10
+
+La fase 10 genera exactamente 200 candidatos con semilla `20261011` y selecciona 10 sin escribir todavía `galeria/`, `latents.npz` ni el manifiesto final. Estos últimos pertenecen a la fase 11.
+
+El procedimiento queda completamente declarado:
+
+1. exigir fase 9 aprobada con el mismo SHA-256 del checkpoint;
+2. medir ocupación y contraste respecto a límites derivados del dataset;
+3. calcular vecino ResNet18, coseno, MSE, novedad y calidad para los 200 candidatos;
+4. elegir el primer candidato con `0.70 × novedad + 0.30 × calidad`;
+5. elegir los nueve restantes con `0.55 × diversidad interna + 0.30 × novedad + 0.15 × calidad`;
+6. conservar orden, índices, métricas y tasa `10/200 = 5%` sin reemplazo humano;
+7. exportar `candidate_metrics.csv`, `selected_candidates.csv`, vista de los 200, rejilla de los 10 y diagnósticos de distribución.
+
+El smoke test específico aprobó con 200 candidatos sintéticos, 171 elegibles y 10 seleccionados de forma determinista. La ejecución GAN posterior produjo 200 candidatos reales, 97 elegibles y seleccionó los índices `100, 35, 144, 141, 114, 15, 48, 20, 0, 39`.
+
+Resultados reales: coseno medio con el vecino de entrenamiento `0.7563`, MSE medio `0.02152` y cero duplicados exactos. `artifacts/phase10/phase10_summary.json` conserva el checkpoint, hash, semilla, regla y métricas; las tres figuras permiten auditar la decisión antes de iniciar la fase 11.
 
 ## Implementación de fase 5
 
@@ -202,7 +220,7 @@ La generación y auditoría de la galería quedó implementada con una precondic
 ### Estado verificable
 
 - Prueba sintética de filtrado, vecinos y selección: aprobada.
-- Métricas A/B/C: 60/60; los checkpoints locales son de época 1 y los finales deben restaurarse desde Drive.
+- Métricas A/B/C: 60/60; el checkpoint C final está disponible y verificado en época 60.
 - Pesos ResNet18: oficiales y presentes en la caché local; no se permiten pesos aleatorios como sustituto.
 - Tasa de selección que se declarará: `10/200 = 5%`.
 - Nombres y roles: asignados después de la selección para optar a la bonificación, sin intervenir en la métrica técnica.

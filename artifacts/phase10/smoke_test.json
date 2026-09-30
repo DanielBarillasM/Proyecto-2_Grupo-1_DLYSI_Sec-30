@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "candidate_count": 200,
+  "eligible_candidates": 171,
+  "selected_count": 10,
+  "selection_rate": 0.05,
+  "selected_indices": [
+    94,
+    22,
+    165,
+    24,
+    187,
+    119,
+    117,
+    198,
+    190,
+    163
+  ],
+  "deterministic_selection": true,
+  "note": "Vectores sintéticos; validan el algoritmo, no la calidad de la GAN."
+}

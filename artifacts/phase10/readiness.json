@@ -1,0 +1,16 @@
+{
+  "status": "ready",
+  "phase": 10,
+  "selected_experiment": "bce_spectral_norm",
+  "checkpoint": "checkpoints/bce_spectral_norm/latest.pt",
+  "checkpoint_epoch": 60,
+  "target_epoch": 60,
+  "checkpoint_sha256": "b032a9fa92e719b0500e54a7ee14d5c1a691386bb32459d38807305b699b7f80",
+  "phase9_status": "passed",
+  "phase9_checkpoint_sha256": "b032a9fa92e719b0500e54a7ee14d5c1a691386bb32459d38807305b699b7f80",
+  "candidate_count": 200,
+  "selected_count": 10,
+  "selection_rate": 0.05,
+  "blocking_reasons": [],
+  "next_command": "python scripts/run_phase10_selection.py --device auto"
+}

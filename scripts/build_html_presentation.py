@@ -41,6 +41,24 @@ def load_data() -> dict[str, object]:
     phase9 = json.loads(
         (ROOT / "artifacts" / "phase9" / "readiness.json").read_text(encoding="utf-8")
     )
+    phase9_summary_path = ROOT / "artifacts" / "phase9" / "phase9_summary.json"
+    phase9_summary = (
+        json.loads(phase9_summary_path.read_text(encoding="utf-8"))
+        if phase9_summary_path.exists()
+        else {}
+    )
+    phase10 = json.loads(
+        (ROOT / "artifacts" / "phase10" / "readiness.json").read_text(encoding="utf-8")
+    )
+    phase10_smoke = json.loads(
+        (ROOT / "artifacts" / "phase10" / "smoke_test.json").read_text(encoding="utf-8")
+    )
+    phase10_summary_path = ROOT / "artifacts" / "phase10" / "phase10_summary.json"
+    phase10_summary = (
+        json.loads(phase10_summary_path.read_text(encoding="utf-8"))
+        if phase10_summary_path.exists()
+        else {}
+    )
     target = int(config["training"]["epochs"])
     experiment_labels = {
         "baseline_bce": "A · BCE base",
@@ -88,6 +106,34 @@ def load_data() -> dict[str, object]:
         "phase9_checkpoint_epoch": phase9["checkpoint_epoch"],
         "phase9_target_epoch": phase9["target_epoch"],
         "phase9_resnet_cached": phase9["resnet18"]["cached"],
+        "phase9_complete": phase9_summary.get("status") == "passed",
+        "phase9_mean_similarity": round(
+            float(phase9_summary.get("cosine_similarity", {}).get("mean", 0.0)), 4
+        ),
+        "phase9_max_similarity": round(
+            float(phase9_summary.get("cosine_similarity", {}).get("max", 0.0)), 4
+        ),
+        "phase9_screening_flags": int(phase9_summary.get("screening_flag_count", 0)),
+        "phase9_exact_duplicates": int(phase9_summary.get("exact_pixel_duplicate_count", 0)),
+        "phase10_ready": phase10["status"] == "ready",
+        "phase10_candidate_count": int(phase10["candidate_count"]),
+        "phase10_selected_count": int(phase10["selected_count"]),
+        "phase10_selection_rate": f"{float(phase10['selection_rate']):.0%}",
+        "phase10_smoke_passed": (
+            phase10_smoke["status"] == "passed"
+            and bool(phase10_smoke["deterministic_selection"])
+        ),
+        "phase10_complete": phase10_summary.get("status") == "passed",
+        "phase10_eligible": int(phase10_summary.get("eligible_candidates", 0)),
+        "phase10_mean_similarity": round(
+            float(phase10_summary.get("mean_selected_neighbor_similarity", 0.0)), 4
+        ),
+        "phase10_mean_mse": round(
+            float(phase10_summary.get("mean_selected_pixel_mse", 0.0)), 5
+        ),
+        "phase10_exact_duplicates": int(
+            phase10_summary.get("exact_pixel_duplicate_count", 0)
+        ),
         "dataset": {
             "images": int(dataset["image_count"]),
             "resolution": "64 × 64",
@@ -130,6 +176,8 @@ def validate_html(data: dict[str, object]) -> dict[str, object]:
         ROOT / "artifacts" / "dataset" / "dataset_contact_sheet.png",
         ROOT / "artifacts" / "phase8" / "fixed_noise_milestones.png",
         ROOT / "artifacts" / "phase8" / "phase8_diagnostics.png",
+        ROOT / "artifacts" / "phase9" / "fixed_noise_neighbors.png",
+        ROOT / "artifacts" / "phase10" / "selected_10.png",
     ]
     missing = [path.relative_to(ROOT).as_posix() for path in required if not path.exists()]
     if parser.slides != 12 or parser.titles != 11:
@@ -145,7 +193,11 @@ def validate_html(data: dict[str, object]) -> dict[str, object]:
         "phase8_complete": data["phase8_complete"],
         "selected_experiment": data["selected_experiment"],
         "phase9_ready": data["phase9_ready"],
+        "phase9_complete": data["phase9_complete"],
         "phase9_checkpoint_epoch": data["phase9_checkpoint_epoch"],
+        "phase10_ready": data["phase10_ready"],
+        "phase10_smoke_passed": data["phase10_smoke_passed"],
+        "phase10_complete": data["phase10_complete"],
         "gallery_ready": data["gallery_ready"],
         "keyboard_navigation": True,
         "print_layout": "16:9, una escena por página",

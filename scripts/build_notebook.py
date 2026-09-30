@@ -36,7 +36,7 @@ cells = [
 Deep Learning · 2026
 
 > **Integrantes:** Pablo Daniel Barillas Moreno · Wilson Alejandro Calderón  
-> **Estado:** fase 9 implementada — ResNet18 lista; falta restaurar el checkpoint C de época 60.
+> **Estado:** fases 9–10 completadas con el checkpoint C verificado en época 60.
 > **Regla principal:** ninguna imagen final puede proceder de un generador externo.
 """
     ),
@@ -581,7 +581,7 @@ python scripts\build_gallery.py --experiment <experimento_seleccionado>
 python scripts\validate_gallery.py
 ```
 
-<div class="callout gold"><strong>Resultado actual honesto.</strong> La prueba sintética aprobó y C fue seleccionado provisionalmente. La galería sigue vacía porque el checkpoint final no está versionado: el archivo local es de época 1 y debe reemplazarse por el respaldo de época 60 guardado en Drive.</div>
+<div class="callout gold"><strong>Resultado actual honesto.</strong> C fue auditado con su checkpoint final de época 60. Las fases 9–10 contienen resultados GAN reales; la galería definitiva continúa vacía porque su persistencia, vectores latentes y manifiesto corresponden a la fase 11.</div>
 """
     ),
     md(
@@ -596,10 +596,15 @@ La regla `coseno ≥ 0.95` y `MSE ≤ 0.01` funciona únicamente como bandera de
     code(
         r'''
 phase9_path = ROOT / "artifacts" / "phase9" / "readiness.json"
-if not phase9_path.exists():
-    raise FileNotFoundError("Ejecute scripts/check_phase9_readiness.py")
+phase9_summary_path = ROOT / "artifacts" / "phase9" / "phase9_summary.json"
+if not phase9_path.exists() or not phase9_summary_path.exists():
+    raise FileNotFoundError("Ejecute la comprobación y el análisis de fase 9")
 with open(phase9_path, encoding="utf-8") as file:
     PHASE9 = json.load(file)
+with open(phase9_summary_path, encoding="utf-8") as file:
+    PHASE9_SUMMARY = json.load(file)
+
+assert PHASE9_SUMMARY["status"] == "passed"
 
 display(HTML(f"""
 <div class="kpis">
@@ -610,15 +615,18 @@ display(HTML(f"""
 </div>
 """))
 print(f"Estado fase 9: {PHASE9['status'].upper()}")
-for reason in PHASE9["blocking_reasons"]:
-    print(f"- {reason}")
+print(f"Coseno medio: {PHASE9_SUMMARY['cosine_similarity']['mean']:.4f}")
+print(f"MSE medio: {PHASE9_SUMMARY['pixel_mse']['mean']:.5f}")
+print(f"Duplicados exactos: {PHASE9_SUMMARY['exact_pixel_duplicate_count']}")
+print(f"Banderas de revisión: {PHASE9_SUMMARY['screening_flag_count']}")
+display(IPyImage(filename=ROOT / "artifacts" / "phase9" / "fixed_noise_neighbors.png"))
 '''
     ),
     md(
         r"""
-### 13.1 Ejecución pendiente del peso final
+### 13.1 Resultado real
 
-Después de restaurar `checkpoints/bce_spectral_norm/latest.pt` desde Drive, debe verificarse que `torch.load(...)["epoch"] == 60` y ejecutar:
+El checkpoint C fue verificado en época 60. La auditoría produjo coseno medio `0.7660`, MSE medio `0.02615`, cero duplicados exactos y cero banderas de revisión. Se reproduce con:
 
 ```powershell
 python scripts\check_phase9_readiness.py
@@ -630,18 +638,79 @@ Las salidas válidas serán `fixed_noise_neighbors.csv`, `fixed_noise_neighbors.
     ),
     md(
         r"""
-## 14. Estado actual y fase 9
+## 14. Implementación de la fase 10
+
+La selección queda pre-registrada y no admite reemplazos manuales: se generan **200 candidatos** con semilla `20261011`, se filtran mediante límites derivados del dataset y se eligen **10** combinando novedad, calidad y diversidad interna.
+
+- Primer candidato: `70% novedad + 30% calidad técnica`.
+- Nueve restantes: `55% diversidad interna + 30% novedad + 15% calidad`.
+- Tasa declarada: `10/200 = 5%`.
+- La fase 10 no escribe todavía PNG finales, vectores `z` ni `manifest.csv`.
+"""
+    ),
+    code(
+        r'''
+phase10_readiness_path = ROOT / "artifacts" / "phase10" / "readiness.json"
+phase10_smoke_path = ROOT / "artifacts" / "phase10" / "smoke_test.json"
+phase10_summary_path = ROOT / "artifacts" / "phase10" / "phase10_summary.json"
+if not all(path.exists() for path in (phase10_readiness_path, phase10_smoke_path, phase10_summary_path)):
+    raise FileNotFoundError(
+        "Ejecute la comprobación, el smoke test y la selección real de fase 10"
+    )
+with open(phase10_readiness_path, encoding="utf-8") as file:
+    PHASE10 = json.load(file)
+with open(phase10_smoke_path, encoding="utf-8") as file:
+    PHASE10_SMOKE = json.load(file)
+with open(phase10_summary_path, encoding="utf-8") as file:
+    PHASE10_SUMMARY = json.load(file)
+
+assert PHASE10_SMOKE["status"] == "passed"
+assert PHASE10_SMOKE["candidate_count"] == 200
+assert PHASE10_SMOKE["selected_count"] == 10
+assert PHASE10_SMOKE["deterministic_selection"]
+assert PHASE10_SUMMARY["status"] == "passed"
+assert PHASE10_SUMMARY["candidate_count"] == 200
+assert PHASE10_SUMMARY["selected_count"] == 10
+display(HTML(f"""
+<div class="kpis">
+  <div class="kpi"><span>Estado real</span><strong>{PHASE10_SUMMARY['status'].upper()}</strong></div>
+  <div class="kpi"><span>Candidatos</span><strong>{PHASE10_SUMMARY['candidate_count']}</strong></div>
+  <div class="kpi"><span>Elegibles</span><strong>{PHASE10_SUMMARY['eligible_candidates']}</strong></div>
+  <div class="kpi"><span>Elegidos</span><strong>{PHASE10_SUMMARY['selected_count']}</strong></div>
+</div>
+"""))
+print(f"Coseno medio seleccionado: {PHASE10_SUMMARY['mean_selected_neighbor_similarity']:.4f}")
+print(f"MSE medio seleccionado: {PHASE10_SUMMARY['mean_selected_pixel_mse']:.5f}")
+print(f"Duplicados exactos: {PHASE10_SUMMARY['exact_pixel_duplicate_count']}")
+print("Índices seleccionados:", PHASE10_SUMMARY["selected_candidate_indices"])
+display(IPyImage(filename=ROOT / "artifacts" / "phase10" / "selected_10.png"))
+'''
+    ),
+    md(
+        r"""
+### 14.1 Resultado real
+
+La ejecución real produjo 200 candidatos, 97 elegibles y 10 seleccionados. Los índices, métricas y figuras se regeneran con:
+
+```powershell
+python scripts\check_phase10_readiness.py
+python scripts\run_phase10_selection.py --device auto
+```
+
+Los archivos `candidate_metrics.csv`, `selected_candidates.csv`, `candidate_overview.png`, `selected_10.png`, `selection_diagnostics.png` y `phase10_summary.json` están en `artifacts/phase10/`.
+"""
+    ),
+    md(
+        r"""
+## 15. Estado actual y fase 10
 
 <div class="callout magic"><strong>Entrenamiento y análisis completos.</strong> Los tres experimentos llegaron a 60/60 en CUDA. La auditoría favorece provisionalmente <code>bce_spectral_norm</code>: mantiene diversidad final de 0.2659, mientras hinge cae a 0.0136 y muestra colapso de modo.</div>
 
-<div class="callout gold"><strong>Fase 9 preparada, ejecución bloqueada de forma segura.</strong> ResNet18 oficial ya está en caché y el dataset está completo. El único bloqueo es reemplazar el checkpoint C local de época 1 por el respaldo de época 60.</div>
+<div class="callout gold"><strong>Fases 9–10 completadas.</strong> La auditoría de vecinos no encontró duplicados exactos ni banderas de revisión. De 200 candidatos reales, 97 fueron elegibles y 10 quedaron seleccionados mediante la regla pre-registrada.</div>
 
 ### Siguiente fase
 
-- restaurar desde Drive el checkpoint C cuya época interna sea 60;
-- ejecutar los vecinos más cercanos con ResNet18 y MSE;
-- generar 200 candidatos y seleccionar 10 con el criterio declarado;
-- guardar vectores <code>z</code>, manifiesto y evidencia de regeneración antes de cerrar la entrega.
+- pasar a la fase 11 para guardar PNG, vectores <code>z</code>, manifiesto y regeneración exacta.
 
 ### Referencias metodológicas
 

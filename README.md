@@ -2,7 +2,7 @@
 
 Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG pixel art de aventura y magia mediante una GAN entrenada por el equipo.
 
-> **Estado actual:** fase 9 implementada y auditada en preparación. Los tres experimentos alcanzaron 60/60 en sus métricas y `bce_spectral_norm` es la selección provisional. ResNet18 ya está en caché local, pero el `latest.pt` presente contiene internamente la época 1; debe restaurarse desde Drive el checkpoint C de época 60 antes de calcular vecinos reales.
+> **Estado actual:** fases 9 y 10 completadas con el checkpoint final de C en época 60. La auditoría ResNet18 no encontró duplicados exactos ni banderas de posible memorización; la selección real evaluó 200 candidatos y eligió 10 de forma determinista. La fase 11 queda pendiente para guardar los PNG finales, los vectores `z` y el manifiesto reproducible.
 
 ## Resultado de esta fase
 
@@ -25,10 +25,14 @@ Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG p
 | Auditoría de fase 8 | 180 épocas + 11,520 pasos válidos |
 | Modelo provisional | C · BCE + spectral normalization |
 | Pipeline de vecinos | Implementado: ResNet18 + coseno + MSE |
-| Checkpoint C local | Archivo presente, época interna 1/60 |
+| Checkpoint C local | Archivo verificado, época interna 60/60 |
 | Pesos ResNet18 | Oficiales y disponibles en caché local |
-| Pipeline de selección | Smoke test sintético aprobado |
-| Galería final válida | Pendiente de vecinos y selección 10/200 |
+| Smoke test de fase 10 | 200 candidatos → 10, determinista, 5% |
+| Vecinos de fase 9 | Coseno medio 0.7660; MSE medio 0.02615 |
+| Control de memorización | 0 duplicados exactos; 0 banderas de revisión |
+| Selección GAN 10/200 | 200 generados; 97 elegibles; 10 seleccionados |
+| Vecino medio de los seleccionados | Coseno 0.7563; MSE 0.02152 |
+| Galería final válida | Pendiente de persistencia y manifiesto en fase 11 |
 | Presentación PDF | 12 páginas, validación automática aprobada |
 | Presentación HTML | 12 escenas, teclado, vista general y validación en navegador |
 | Entrenamiento Colab | Completado; artefactos sincronizados |
@@ -169,13 +173,15 @@ El checkpoint completo se mantiene como archivo rodante para limitar el uso de d
 
 La fase queda separada de la selección final: no genera los 200 candidatos ni escribe en `galeria/`. Produce `fixed_noise_neighbors.csv`, una figura lado a lado y un resumen JSON en `artifacts/phase9/`. Una regla declarada (`coseno ≥ 0.95` y `MSE ≤ 0.01`) solo marca casos para revisión y no se interpreta automáticamente como prueba de memorización.
 
-El control actual detectó correctamente:
+La ejecución final verificó:
 
 - dataset completo: 4,096 imágenes, cero faltantes y cero hashes duplicados;
 - pesos oficiales de ResNet18 disponibles;
-- checkpoint C local desactualizado: época interna 1/60.
+- checkpoint C en época interna 60/60 y SHA-256 `b032a9fa92e719b0500e54a7ee14d5c1a691386bb32459d38807305b699b7f80`;
+- 16 muestras de ruido fijo con coseno medio `0.7660` y MSE medio `0.02615`;
+- cero duplicados exactos y cero casos que cumplan simultáneamente `coseno ≥ 0.95` y `MSE ≤ 0.01`.
 
-Después de restaurar desde Drive `checkpoints/bce_spectral_norm/latest.pt` de época 60:
+La auditoría se reproduce con:
 
 ```powershell
 python scripts\check_phase9_readiness.py
@@ -183,6 +189,30 @@ python scripts\analyze_phase9_neighbors.py --device auto
 ```
 
 El notebook de Colab también incluye estas celdas y respalda `artifacts/phase9/` en Drive.
+
+## Fase 10: generación y selección transparente 10/200
+
+[`scripts/run_phase10_selection.py`](scripts/run_phase10_selection.py) implementa la fase sin escribir todavía la galería final ni los vectores `z` reservados para la fase 11:
+
+1. exige que la fase 9 haya aprobado con el mismo hash de checkpoint;
+2. genera exactamente 200 candidatos con semilla `20261011`;
+3. deriva límites de ocupación y contraste desde el dataset real;
+4. calcula calidad técnica, vecino ResNet18, coseno, MSE y novedad para cada candidato;
+5. elige el primero con `70% novedad + 30% calidad`;
+6. elige los restantes con `55% diversidad interna + 30% novedad + 15% calidad`;
+7. guarda las 200 métricas, los 10 índices ordenados y tres figuras de auditoría en `artifacts/phase10/`.
+
+No existe reemplazo manual ni selección oculta. La ejecución real generó 200 candidatos, encontró 97 elegibles y seleccionó los índices `100, 35, 144, 141, 114, 15, 48, 20, 0, 39`. La tasa es `10/200 = 5%`, el coseno medio frente al vecino real es `0.7563`, el MSE medio es `0.02152` y no hay duplicados exactos:
+
+```powershell
+python scripts\smoke_test_phase10.py
+python scripts\check_phase10_readiness.py
+python scripts\run_phase10_selection.py --device auto
+```
+
+Las métricas completas están en `artifacts/phase10/candidate_metrics.csv`; la selección ordenada está en `selected_candidates.csv` y las figuras de auditoría incluyen la vista de los 200, la rejilla de los 10 y sus distribuciones.
+
+![Selección técnica 10/200](artifacts/phase10/selected_10.png)
 
 ## Galería y prueba de novedad — puntos 10 y 11 del plan
 
@@ -213,13 +243,13 @@ python scripts\validate_gallery.py
 
 Los pesos oficiales de ResNet18 ya están en la caché de este equipo. En un runtime nuevo de Colab se descargarán una vez; el programa nunca los sustituye silenciosamente por una red aleatoria.
 
-> **Resultado actual honesto:** el smoke test usa datos sintéticos únicamente para validar filtrado, vecinos y selección. No crea imágenes en `galeria/` y no constituye evidencia de calidad de la GAN.
+> **Resultado actual honesto:** además del smoke test sintético, las fases 9–10 ya contienen evidencia GAN real. La rejilla de fase 10 sigue siendo una selección técnica provisional: todavía no sustituye la galería reproducible de fase 11.
 
 ## Presentación regenerable — punto 14 del plan
 
 [`presentation/presentacion.html`](presentation/presentacion.html) es la versión interactiva para exponer: navegación por teclado, pantalla completa, vista general, diseño responsivo y actualización desde artefactos reales. [`presentation/presentacion.pdf`](presentation/presentacion.pdf) funciona como informe entregable y respeta el máximo de 12 diapositivas. Ambas incorporan la matriz exigida y cubren universo, datos, arquitectura, hipótesis A/B/C, ruido fijo, curvas, fallos, galería, vecinos, conclusiones y reflexión.
 
-La presentación no contiene métricas escritas a mano: [`scripts/build_presentation.py`](scripts/build_presentation.py) lee los artefactos vigentes, genera `presentation/generated_results.tex`, compila con XeLaTeX y comprueba el número de páginas, el formato 16:9 y la presencia de texto. El entrenamiento y la fase 8 ya están reflejados; las diapositivas de galería y vecinos mantienen explícitamente **evidencia pendiente** hasta completar las fases 9–11.
+La presentación no contiene métricas escritas a mano: [`scripts/build_presentation.py`](scripts/build_presentation.py) lee los artefactos vigentes, genera `presentation/generated_results.tex`, compila con XeLaTeX y comprueba el número de páginas, el formato 16:9 y la presencia de texto. La versión HTML refleja la auditoría real de fase 9 y la selección técnica de fase 10; la galería definitiva permanece pendiente únicamente de la fase 11.
 
 La versión web se actualiza y valida con:
 
@@ -248,14 +278,13 @@ Cambios de seguridad para sesiones interrumpibles:
 - el notebook exige CUDA y verifica que no existan épocas duplicadas después de reanudar;
 - el descargador `scripts/fetch_lpc.py` funciona en Linux, Windows y Colab.
 
-La fase 7 ya terminó: los artefactos de métricas y muestras de A/B/C quedaron sincronizados. GitHub no versiona los checkpoints pesados; los `latest.pt` locales siguen en época 1 y el respaldo final de C debe restaurarse desde Drive para continuar.
+Las fases 7–10 ya terminaron. Los artefactos de métricas, muestras, vecinos y selección quedaron generados con el checkpoint C final de época 60. GitHub ignora los checkpoints pesados por diseño; el archivo debe conservarse además en Drive o mediante Git LFS.
 
 ## Trabajo pendiente antes de la entrega
 
-1. Restaurar desde Drive el checkpoint `bce_spectral_norm/latest.pt` cuya época interna sea 60 y ejecutar la fase 9.
-2. Ejecutar las fases 10–11: generar 200 candidatos, seleccionar 10 y guardar sus vectores `z` y manifiesto.
-3. Cerrar los puntos 12–14: README, notebook y presentación con la galería validada.
-4. Ejecutar la matriz de evidencias y validación integral del punto 15 antes de comprimir la entrega.
+1. Ejecutar la fase 11: guardar los diez PNG, sus vectores `z`, manifiesto y prueba de regeneración.
+2. Cerrar los puntos 12–14: README, notebook y presentación con la galería definitiva validada.
+3. Ejecutar la matriz de evidencias y validación integral del punto 15 antes de comprimir la entrega.
 
 ## Estructura
 
@@ -281,6 +310,9 @@ La fase 7 ya terminó: los artefactos de métricas y muestras de A/B/C quedaron 
 ├── scripts/analyze_phase8.py
 ├── scripts/check_phase9_readiness.py
 ├── scripts/analyze_phase9_neighbors.py
+├── scripts/check_phase10_readiness.py
+├── scripts/run_phase10_selection.py
+├── scripts/smoke_test_phase10.py
 ├── scripts/check_phase5_readiness.py
 ├── scripts/smoke_test_evaluation.py
 ├── scripts/build_gallery.py

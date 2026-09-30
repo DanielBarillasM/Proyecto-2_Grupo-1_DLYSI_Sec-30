@@ -217,6 +217,7 @@ def main() -> None:
         "phase": 9,
         "experiment": experiment,
         "checkpoint": checkpoint_path.relative_to(ROOT).as_posix(),
+        "checkpoint_sha256": sha256_file(checkpoint_path),
         "checkpoint_epoch": checkpoint_epoch,
         "sample_count": int(len(results)),
         "training_image_count": int(len(manifest)),

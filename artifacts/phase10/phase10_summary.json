@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "phase": 10,
+  "experiment": "bce_spectral_norm",
+  "checkpoint": "checkpoints/bce_spectral_norm/latest.pt",
+  "checkpoint_epoch": 60,
+  "checkpoint_sha256": "b032a9fa92e719b0500e54a7ee14d5c1a691386bb32459d38807305b699b7f80",
+  "candidate_count": 200,
+  "eligible_candidates": 97,
+  "selected_count": 10,
+  "selection_rate": 0.05,
+  "gallery_seed": 20261011,
+  "selected_candidate_indices": [
+    100,
+    35,
+    144,
+    141,
+    114,
+    15,
+    48,
+    20,
+    0,
+    39
+  ],
+  "feature_extractor": "ResNet18 IMAGENET1K_V1 sin capa final",
+  "feature_weights_url": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
+  "device": "cpu",
+  "training_feature_cache_used": true,
+  "quality_bounds": {
+    "foreground_min": 0.100615234375,
+    "foreground_max": 0.305615234375,
+    "contrast_min": 0.08687578365206718,
+    "contrast_max": 0.31936740428209304,
+    "foreground_median": 0.188720703125,
+    "contrast_median": 0.18393316864967346
+  },
+  "mean_selected_neighbor_similarity": 0.7562521696090698,
+  "mean_selected_pixel_mse": 0.02152150124311447,
+  "exact_pixel_duplicate_count": 0,
+  "selection_rule": {
+    "first": "70% novedad frente a entrenamiento + 30% calidad técnica",
+    "remaining": "55% diversidad interna + 30% novedad + 15% calidad",
+    "human_override": false
+  },
+  "phase11_pending": [
+    "guardar los diez PNG finales",
+    "guardar los vectores z en latents.npz",
+    "construir manifest.csv y validar regeneración exacta"
+  ]
+}

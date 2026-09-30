@@ -177,8 +177,13 @@
         <h2 class="slide-title">Diez guardianes de Eryndor</h2>
         <div class="pending-panel" id="gallery-pending">
           <span class="pending-rune">◇</span><h3>Evidencia pendiente</h3>
-          <p>El entrenamiento terminó y C fue seleccionado provisionalmente. El checkpoint local es de época 1/60; debe restaurarse el respaldo final antes de auditar 200 candidatos.</p>
+          <p>La selección técnica 10/200 todavía no está disponible.</p>
+          <p class="status-line" id="phase10-status">200 candidatos · 10 seleccionados · 5%</p>
           <p class="status-line" id="epoch-status"></p>
+        </div>
+        <div class="gallery-ready" id="phase10-ready" hidden>
+          <img data-phase10-src="../artifacts/phase10/selected_10.png" alt="Selección técnica de diez candidatos GAN">
+          <div><strong>Selección técnica validada · 10/200</strong><p id="phase10-detail">La persistencia reproducible de la galería corresponde a la fase 11.</p></div>
         </div>
         <div class="gallery-ready" id="gallery-ready" hidden>
           <img data-src="../artifacts/gallery/final_gallery_grid.png" alt="Galería final de diez personajes GAN">
@@ -194,8 +199,12 @@
         <h2 class="slide-title">Prueba de vecinos más cercanos</h2>
         <div class="pending-panel" id="neighbors-pending">
           <span class="pending-rune">⌁</span><h3>Evidencia pendiente</h3>
-          <p>ResNet18, similitud coseno, MSE y la figura lado a lado están implementados. ResNet18 ya está en caché; el checkpoint C local sigue en época <strong id="phase9-checkpoint">1/60</strong>.</p>
+          <p>La auditoría ResNet18 todavía no está disponible para el checkpoint C de época <strong id="phase9-checkpoint">60/60</strong>.</p>
           <p>Tasa declarada: <strong data-bind="selection"></strong></p>
+        </div>
+        <div class="neighbors-ready" id="phase9-ready" hidden>
+          <img data-phase9-src="../artifacts/phase9/fixed_noise_neighbors.png" alt="Muestras de ruido fijo y sus vecinos reales">
+          <dl><div><dt>Coseno medio</dt><dd data-bind="phase9_mean_similarity"></dd></div><div><dt>Banderas</dt><dd data-bind="phase9_screening_flags"></dd></div></dl>
         </div>
         <div class="neighbors-ready" id="neighbors-ready" hidden>
           <img data-src="../artifacts/gallery/nearest_neighbors.png" alt="Personajes GAN junto a sus vecinos reales">
@@ -210,7 +219,7 @@
         <p class="section-key">Alcance actual</p>
         <h2 class="slide-title">Lo que sabemos y lo que todavía no</h2>
         <div class="conclusion-columns">
-          <div><h3>Demostrado</h3><ul><li>Dataset reproducible, único y acreditado.</li><li>A/B/C completaron 60 épocas sin métricas inválidas.</li><li>Hinge colapsó bajo esta configuración.</li><li>C ofrece el mejor equilibrio provisional.</li></ul></div>
+          <div><h3>Demostrado</h3><ul><li>Dataset reproducible, único y acreditado.</li><li>A/B/C completaron 60 épocas sin métricas inválidas.</li><li>Hinge colapsó bajo esta configuración.</li><li>Vecinos y selección real 10/200 fueron auditados.</li></ul></div>
           <div><h3>Limitaciones</h3><ul><li>Una sola pose y bases anatómicas compartidas.</li><li>La diversidad L2 no sustituye una métrica perceptual.</li><li id="learning-limit">A y C aprendieron personajes; todavía falta demostrar novedad frente al entrenamiento.</li></ul><p id="reflection"><strong>Reflexión pendiente:</strong> se responderá al identificar el personaje más cercano a una imagen real.</p></div>
         </div>
       </div>
@@ -228,8 +237,8 @@
           <div role="row"><b>Pérdida y estabilidad</b><span>5–8</span><span>A/B/C completados y C provisional.</span><span id="matrix-training-limit">Trayectorias completas.</span></div>
           <div role="row"><b>Ruido fijo</b><span>6</span><span>Hitos 0, 5, 10, 20, 40 y 60.</span><span>L2 es solo un proxy.</span></div>
           <div role="row"><b>Curvas</b><span>7–8</span><span>Hinge colapsa; C sostiene diversidad.</span><span>Pérdidas no comparables entre familias.</span></div>
-          <div role="row"><b>Galería + 10/200</b><span>9</span><span id="matrix-gallery">Pipeline listo y bloqueo correcto.</span><span id="matrix-gallery-limit">Sin PNG finales.</span></div>
-          <div role="row"><b>Vecinos</b><span>10</span><span id="matrix-neighbors">Pipeline listo; ejecución espera checkpoint 60.</span><span>ResNet18 no es específica de pixel art.</span></div>
+          <div role="row"><b>Galería + 10/200</b><span>9</span><span id="matrix-gallery">200 evaluados; 97 elegibles; 10 seleccionados.</span><span id="matrix-gallery-limit">Persistencia final pendiente de fase 11.</span></div>
+          <div role="row"><b>Vecinos</b><span>10</span><span id="matrix-neighbors">0 duplicados y 0 banderas de revisión.</span><span>ResNet18 no es específica de pixel art.</span></div>
           <div role="row"><b>Reflexión</b><span>11</span><span>Alcance declarado con honestidad.</span><span>Depende de la galería validada.</span></div>
         </div>
         <p class="source-line">Goodfellow et al. (2014) · Universal LPC Character Generator · LPC Style Guide · IA declarada en README</p>

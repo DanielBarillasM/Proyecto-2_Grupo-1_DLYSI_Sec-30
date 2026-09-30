@@ -1,0 +1,17 @@
+sample_id,fixed_noise_index,nearest_train_index,nearest_train_image_id,nearest_train_path,cosine_similarity,pixel_mse,foreground_ratio,contrast,screening_flag,exact_pixel_duplicate
+F01,0,2824,eryndor_2824,data/processed/sprites/eryndor_2824.png,0.74822694,0.020079905,0.39257812,0.1610874,False,False
+F02,1,3508,eryndor_3508,data/processed/sprites/eryndor_3508.png,0.76268506,0.034324415,0.28979492,0.1489709,False,False
+F03,2,2552,eryndor_2552,data/processed/sprites/eryndor_2552.png,0.7961992,0.016553726,0.27539062,0.15904298,False,False
+F04,3,2824,eryndor_2824,data/processed/sprites/eryndor_2824.png,0.77899086,0.024512574,0.36132812,0.14145252,False,False
+F05,4,3508,eryndor_3508,data/processed/sprites/eryndor_3508.png,0.7763547,0.034641396,0.2746582,0.171684,False,False
+F06,5,1036,eryndor_1036,data/processed/sprites/eryndor_1036.png,0.77399033,0.02011015,0.31323242,0.20616265,False,False
+F07,6,2824,eryndor_2824,data/processed/sprites/eryndor_2824.png,0.77110195,0.023416141,0.35961914,0.14332528,False,False
+F08,7,2366,eryndor_2366,data/processed/sprites/eryndor_2366.png,0.6648509,0.021722639,0.38842773,0.19580933,False,False
+F09,8,2530,eryndor_2530,data/processed/sprites/eryndor_2530.png,0.7530482,0.019421684,0.2770996,0.16848978,False,False
+F10,9,2824,eryndor_2824,data/processed/sprites/eryndor_2824.png,0.7586765,0.016869158,0.35351562,0.1510898,False,False
+F11,10,3727,eryndor_3727,data/processed/sprites/eryndor_3727.png,0.78485924,0.040831845,0.36254883,0.13666557,False,False
+F12,11,487,eryndor_0487,data/processed/sprites/eryndor_0487.png,0.74896586,0.020207666,0.33154297,0.17259887,False,False
+F13,12,2824,eryndor_2824,data/processed/sprites/eryndor_2824.png,0.77058256,0.024812698,0.3540039,0.13722861,False,False
+F14,13,86,eryndor_0086,data/processed/sprites/eryndor_0086.png,0.75989395,0.031401057,0.30566406,0.17357247,False,False
+F15,14,3508,eryndor_3508,data/processed/sprites/eryndor_3508.png,0.81187046,0.034247763,0.30688477,0.15455334,False,False
+F16,15,3508,eryndor_3508,data/processed/sprites/eryndor_3508.png,0.7953752,0.03521292,0.31152344,0.1587859,False,False

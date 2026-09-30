@@ -399,6 +399,67 @@ display(HTML('<div class="phase-note"><strong>Fase 9 ejecutada.</strong> Revise 
     ),
     md(
         r"""
+## 13. Fase 10 · selección transparente 10/200
+
+La fase 10 usa el mismo checkpoint validado por fase 9. Genera 200 candidatos con semilla fija, aplica filtros derivados del dataset y selecciona 10 sin intervención manual. Todavía no escribe la galería ni los vectores latentes finales.
+"""
+    ),
+    code(
+        r'''
+subprocess.run(
+    [sys.executable, "scripts/smoke_test_phase10.py"],
+    cwd=RUNTIME_ROOT,
+    check=True,
+)
+subprocess.run(
+    [sys.executable, "scripts/check_phase10_readiness.py"],
+    cwd=RUNTIME_ROOT,
+    check=True,
+)
+phase10_readiness = json.loads(
+    (RUNTIME_ROOT / "artifacts/phase10/readiness.json").read_text()
+)
+display(pd.DataFrame([{
+    "Candidatos": phase10_readiness["candidate_count"],
+    "Selección": phase10_readiness["selected_count"],
+    "Tasa": phase10_readiness["selection_rate"],
+    "Fase 9": phase10_readiness["phase9_status"],
+    "Estado": phase10_readiness["status"],
+}]).style.format({"Tasa": "{:.1%}"}).hide(axis="index"))
+assert phase10_readiness["status"] == "ready", phase10_readiness["blocking_reasons"]
+'''
+    ),
+    code(
+        r'''
+subprocess.run(
+    [
+        sys.executable,
+        "scripts/run_phase10_selection.py",
+        "--device", "cuda",
+        "--feature-batch-size", "128",
+    ],
+    cwd=RUNTIME_ROOT,
+    check=True,
+)
+
+phase10_dir = RUNTIME_ROOT / "artifacts/phase10"
+drive_phase10 = DRIVE_ROOT / "artifacts/phase10"
+shutil.copytree(phase10_dir, drive_phase10, dirs_exist_ok=True)
+phase10_summary = json.loads((phase10_dir / "phase10_summary.json").read_text())
+display(pd.DataFrame([{
+    "Candidatos": phase10_summary["candidate_count"],
+    "Elegibles": phase10_summary["eligible_candidates"],
+    "Seleccionados": phase10_summary["selected_count"],
+    "Tasa": phase10_summary["selection_rate"],
+    "Coseno medio": phase10_summary["mean_selected_neighbor_similarity"],
+    "MSE medio": phase10_summary["mean_selected_pixel_mse"],
+}]).style.format({"Tasa": "{:.1%}", "Coseno medio": "{:.4f}", "MSE medio": "{:.4f}"}).hide(axis="index"))
+
+display(HTML('<div class="phase-note"><strong>Fase 10 ejecutada.</strong> La selección 10/200 y sus figuras quedaron respaldadas en Drive.</div>'))
+'''
+    ),
+    md(
+        r"""
 ## Problemas frecuentes
 
 - **CUDA no disponible:** cambie el tipo de entorno a GPU y reinicie desde la sección 1.
