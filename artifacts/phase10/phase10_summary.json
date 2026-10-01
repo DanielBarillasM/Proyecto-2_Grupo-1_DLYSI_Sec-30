@@ -41,10 +41,5 @@
     "first": "70% novedad frente a entrenamiento + 30% calidad técnica",
     "remaining": "55% diversidad interna + 30% novedad + 15% calidad",
     "human_override": false
-  },
-  "phase11_pending": [
-    "guardar los diez PNG finales",
-    "guardar los vectores z en latents.npz",
-    "construir manifest.csv y validar regeneración exacta"
-  ]
+  }
 }

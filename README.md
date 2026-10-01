@@ -137,7 +137,7 @@ Salidas principales:
 | B | Hinge loss | Igual al baseline | Solo la pérdida |
 | C | BCE no saturante | Normalización espectral en D | Solo la estabilización |
 
-Los tres experimentos usarán los mismos datos, arquitectura, semilla, ruido fijo, optimizadores y 60 épocas. El diseño completo está en [`docs/PLAN_EXPERIMENTAL.md`](docs/PLAN_EXPERIMENTAL.md).
+Los tres experimentos usaron los mismos datos, arquitectura, semilla, ruido fijo, optimizadores y 60 épocas. El diseño completo está en [`docs/PLAN_EXPERIMENTAL.md`](docs/PLAN_EXPERIMENTAL.md).
 
 ## ⚙ Implementación y smoke test
 
