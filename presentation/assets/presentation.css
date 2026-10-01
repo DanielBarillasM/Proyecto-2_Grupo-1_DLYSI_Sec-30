@@ -267,6 +267,8 @@ code { color: var(--mineral); }
 .tensor-path { color: var(--silver); font-size: 1.2rem; letter-spacing: .02em; }
 .duel-mark { align-self: center; color: var(--mineral); font-size: 2rem; }
 .architecture-foot { text-align: center; color: var(--ink-muted); }
+.architecture-choice { margin: 1rem auto 0; max-width: 68rem; text-align: center; color: var(--ink); }
+.architecture-choice strong { color: var(--mineral-cyan); }
 
 .experiment-lines { display: grid; gap: 0; border-top: 1px solid rgba(230,230,250,.2); }
 .experiment-lines article { display: grid; grid-template-columns: 4rem 15rem 1fr; gap: 1.25rem; align-items: center; padding: 1rem 0; border-bottom: 1px solid rgba(230,230,250,.15); }

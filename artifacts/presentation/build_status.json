@@ -77,25 +77,25 @@
     ]
   ],
   "text_characters_per_page": [
-    369,
+    364,
     829,
     602,
-    541,
-    705,
+    636,
+    703,
+    442,
     397,
-    439,
-    748,
-    270,
-    353,
-    684,
-    1216
+    732,
+    240,
+    321,
+    763,
+    1167
   ],
-  "training_complete": false,
-  "gallery_ready": false,
+  "training_complete": true,
+  "gallery_ready": true,
   "target_epochs": 60,
   "completed_epochs": {
-    "baseline_bce": 1,
-    "hinge_loss": 1,
-    "bce_spectral_norm": 1
+    "baseline_bce": 60,
+    "hinge_loss": 60,
+    "bce_spectral_norm": 60
   }
 }

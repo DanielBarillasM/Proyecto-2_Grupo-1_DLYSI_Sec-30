@@ -150,7 +150,9 @@ def load_data() -> dict[str, object]:
         "gallery": gallery,
         "mean_neighbor_similarity": None,
         "hardest_character": None,
+        "hardest_role": None,
         "hardest_similarity": None,
+        "hardest_mse": None,
         "regeneration_delta": validation.get("regeneration_max_pixel_delta"),
     }
     if gallery_ready:
@@ -160,7 +162,9 @@ def load_data() -> dict[str, object]:
             {
                 "mean_neighbor_similarity": round(float(frame["nearest_cosine_similarity"].mean()), 4),
                 "hardest_character": str(hardest["name"]),
+                "hardest_role": str(hardest["role"]),
                 "hardest_similarity": round(float(hardest["nearest_cosine_similarity"]), 4),
+                "hardest_mse": round(float(hardest["nearest_pixel_mse"]), 5),
             }
         )
     return data
@@ -178,6 +182,8 @@ def validate_html(data: dict[str, object]) -> dict[str, object]:
         ROOT / "artifacts" / "phase8" / "phase8_diagnostics.png",
         ROOT / "artifacts" / "phase9" / "fixed_noise_neighbors.png",
         ROOT / "artifacts" / "phase10" / "selected_10.png",
+        ROOT / "artifacts" / "gallery" / "final_gallery_grid.png",
+        ROOT / "artifacts" / "gallery" / "nearest_neighbors.png",
     ]
     missing = [path.relative_to(ROOT).as_posix() for path in required if not path.exists()]
     if parser.slides != 12 or parser.titles != 11:

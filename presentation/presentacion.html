@@ -111,6 +111,7 @@
             <strong>2,765,568 parámetros</strong>
           </article>
         </div>
+        <p class="architecture-choice"><strong>Elección:</strong> DCGAN coincide con 64 × 64, cabe en Colab y permite aislar pérdida y estabilización sin cambiar la arquitectura.</p>
         <p class="architecture-foot">Adam · lr 2×10⁻⁴ · β=(0.5, 0.999) · batch 64 · semilla 42 · 60 épocas</p>
       </div>
     </section>
@@ -121,9 +122,9 @@
         <p class="section-key">Protocolo pre-registrado</p>
         <h2 class="slide-title">Una sola variable a la vez</h2>
         <div class="experiment-lines">
-          <article><span>A</span><h3>BCE no saturante</h3><p>Control. Esperamos siluetas reconocibles por la consistencia del corpus.</p></article>
-          <article><span>B</span><h3>Hinge loss</h3><p>Cambia únicamente la pérdida. Esperamos gradientes útiles y mejor diversidad.</p></article>
-          <article><span>C</span><h3>Spectral norm en D</h3><p>Cambia únicamente la estabilización. Esperamos limitar periodos de dominio.</p></article>
+          <article><span>A</span><h3>BCE no saturante</h3><p>Corpus consistente; útil si el ruido fijo progresa sin converger a una sola apariencia.</p></article>
+          <article><span>B</span><h3>Hinge loss</h3><p>Preserva gradientes; útil si mejora nitidez y diversidad sin acercarse al entrenamiento.</p></article>
+          <article><span>C</span><h3>Spectral norm en D</h3><p>Limita la magnitud de D; útil si reduce su dominio y sostiene la evolución visual.</p></article>
         </div>
         <div class="control-strip"><strong>Control común</strong><span>datos</span><span>arquitectura</span><span>semillas</span><span>optimizadores</span><span>ruido fijo</span><span>60 épocas</span></div>
       </div>
@@ -220,7 +221,7 @@
         <h2 class="slide-title">Lo que sabemos y lo que todavía no</h2>
         <div class="conclusion-columns">
           <div><h3>Demostrado</h3><ul><li>Dataset reproducible, único y acreditado.</li><li>A/B/C completaron 60 épocas sin métricas inválidas.</li><li>Hinge colapsó bajo esta configuración.</li><li>Vecinos y selección real 10/200 fueron auditados.</li></ul></div>
-          <div><h3>Limitaciones</h3><ul><li>Una sola pose y bases anatómicas compartidas.</li><li>La diversidad L2 no sustituye una métrica perceptual.</li><li id="learning-limit">A y C aprendieron personajes; todavía falta demostrar novedad frente al entrenamiento.</li></ul><p id="reflection"><strong>Reflexión pendiente:</strong> se responderá al identificar el personaje más cercano a una imagen real.</p></div>
+          <div><h3>Limitaciones</h3><ul><li>Una sola pose y bases anatómicas compartidas.</li><li>La diversidad L2 no sustituye una métrica perceptual.</li><li id="learning-limit">La galería validada se regenera con diferencia RGB máxima igual a cero.</li></ul><p id="reflection"><strong>Bram</strong> es el caso más difícil de defender como nuevo; comparte la gramática frontal del conjunto, pero no es una copia exacta.</p></div>
         </div>
       </div>
     </section>
@@ -234,12 +235,12 @@
           <div class="matrix-head" role="row"><span>Evidencia</span><span>Escena</span><span>Conclusión</span><span>Limitación</span></div>
           <div role="row"><b>Universo y datos</b><span>2–3</span><span>Coherentes, abiertos y auditados.</span><span>Una pose compartida.</span></div>
           <div role="row"><b>Arquitectura</b><span>4</span><span>Contratos y checkpoints validados.</span><span>DCGAN limitada a 64 × 64.</span></div>
-          <div role="row"><b>Pérdida y estabilidad</b><span>5–8</span><span>A/B/C completados y C provisional.</span><span id="matrix-training-limit">Trayectorias completas.</span></div>
+          <div role="row"><b>Pérdida y estabilidad</b><span>5–8</span><span>A/B/C completados; C es el modelo final.</span><span id="matrix-training-limit">Trayectorias completas.</span></div>
           <div role="row"><b>Ruido fijo</b><span>6</span><span>Hitos 0, 5, 10, 20, 40 y 60.</span><span>L2 es solo un proxy.</span></div>
           <div role="row"><b>Curvas</b><span>7–8</span><span>Hinge colapsa; C sostiene diversidad.</span><span>Pérdidas no comparables entre familias.</span></div>
-          <div role="row"><b>Galería + 10/200</b><span>9</span><span id="matrix-gallery">200 evaluados; 97 elegibles; 10 seleccionados.</span><span id="matrix-gallery-limit">Persistencia final pendiente de fase 11.</span></div>
+          <div role="row"><b>Galería + 10/200</b><span>9</span><span id="matrix-gallery">10 PNG únicos; selección 10/200 y regeneración exacta.</span><span id="matrix-gallery-limit">Nombres asignados después del ranking; una sola pose.</span></div>
           <div role="row"><b>Vecinos</b><span>10</span><span id="matrix-neighbors">0 duplicados y 0 banderas de revisión.</span><span>ResNet18 no es específica de pixel art.</span></div>
-          <div role="row"><b>Reflexión</b><span>11</span><span>Alcance declarado con honestidad.</span><span>Depende de la galería validada.</span></div>
+          <div role="row"><b>Reflexión</b><span>11</span><span>Bram revela aprendizaje de la gramática LPC.</span><span>Diversidad estructural limitada.</span></div>
         </div>
         <p class="source-line">Goodfellow et al. (2014) · Universal LPC Character Generator · LPC Style Guide · IA declarada en README</p>
       </div>

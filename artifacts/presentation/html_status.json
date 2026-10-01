@@ -12,7 +12,7 @@
   "phase10_ready": true,
   "phase10_smoke_passed": true,
   "phase10_complete": true,
-  "gallery_ready": false,
+  "gallery_ready": true,
   "keyboard_navigation": true,
   "print_layout": "16:9, una escena por página",
   "missing_assets": []

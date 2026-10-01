@@ -1,10 +1,45 @@
-# Eryndor: Guardianes del Velo
+<div align="center">
 
-Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG pixel art de aventura y magia mediante una GAN entrenada por el equipo.
+# ✦ Eryndor: Guardianes del Velo ✦
 
-> **Estado actual:** fases 9–11 completadas con el checkpoint final de C en época 60. La galería conserva diez PNG únicos, vectores `z`, manifiesto, procedencia y prueba de regeneración exacta; las fases 12–15 cerrarán README, notebook, presentación y auditoría integral.
+### Diseño generativo de personajes para un RPG pixel art de aventura y magia
 
-## Resultado de esta fase
+<p>
+  <img alt="Deep Learning" src="https://img.shields.io/badge/Deep_Learning-Proyecto_2-4A4E8F?style=for-the-badge">
+  <img alt="Estado validado" src="https://img.shields.io/badge/Estado-Validado-79A879?style=for-the-badge">
+  <img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-DCGAN-D6A34A?style=for-the-badge&logo=pytorch&logoColor=white">
+  <img alt="Galería" src="https://img.shields.io/badge/Galería-10%20de%20200-4FC3C8?style=for-the-badge">
+</p>
+
+<img src="artifacts/gallery/final_gallery_grid.png" alt="Galería final de Guardianes de Eryndor" width="900">
+
+**Pablo Daniel Barillas Moreno · Wilson Alejandro Calderón**  
+Universidad del Valle de Guatemala · Deep Learning 2026 · Sección 30
+
+</div>
+
+> [!IMPORTANT]
+> **Entrega final validada.** Las fases 1–15 están cerradas con el checkpoint de `bce_spectral_norm` en época 60. Los diez PNG, vectores `z`, manifiesto, procedencia y regeneración exacta se verifican desde los mismos artefactos usados por el notebook, la presentación y el informe.
+
+<div align="center">
+
+[Resultados](#resultados) · [Universo](#universo) · [Experimentos](#experimentos) · [Galería](#galeria) · [Reproducibilidad](#reproducibilidad) · [Presentación](#presentacion)
+
+</div>
+
+| Entregable | Acceso directo |
+|---|---|
+| Notebook final ejecutado | [`notebooks/01_proyecto_gan.ipynb`](notebooks/01_proyecto_gan.ipynb) |
+| Entrenamiento para Colab | [`notebooks/02_entrenamiento_colab.ipynb`](notebooks/02_entrenamiento_colab.ipynb) |
+| Presentación interactiva | [`presentation/presentacion.html`](presentation/presentacion.html) |
+| Presentación entregable | [`presentation/presentacion.pdf`](presentation/presentacion.pdf) |
+| Informe final | [`report/informe_final_eryndor.pdf`](report/informe_final_eryndor.pdf) · [fuente `.tex`](report/informe_final_eryndor.tex) |
+| Auditoría integral | [`artifacts/delivery/validation.json`](artifacts/delivery/validation.json) |
+
+---
+
+<a id="resultados"></a>
+## ✧ Resultados finales
 
 | Evidencia | Resultado real |
 |---|---:|
@@ -23,7 +58,7 @@ Proyecto 2 de Deep Learning 2026: diseño generativo de personajes para un RPG p
 | Checkpoint recargado | Error máximo absoluto 0 |
 | Entrenamiento A / B / C | 60 / 60 / 60 épocas |
 | Auditoría de fase 8 | 180 épocas + 11,520 pasos válidos |
-| Modelo provisional | C · BCE + spectral normalization |
+| Modelo final | C · BCE + spectral normalization |
 | Pipeline de vecinos | Implementado: ResNet18 + coseno + MSE |
 | Checkpoint C local | Archivo verificado, época interna 60/60 |
 | Pesos ResNet18 | Oficiales y disponibles en caché local |
@@ -41,13 +76,14 @@ El conjunto usa una pose frontal consistente, fondo obsidiana y combinaciones de
 
 ![Muestra del dataset](artifacts/dataset/dataset_contact_sheet.png)
 
-## Universo visual
+<a id="universo"></a>
+## ✦ Universo visual
 
 Eryndor es un mundo de fantasía fracturado por magia mineral. Sus guardianes exploran ruinas, recuperan reliquias y contienen grietas arcanas. El lenguaje visual combina sprites detallados, siluetas completas, materiales gastados y acentos de cian, oro y amatista.
 
 La dirección creativa completa está en [`BRIEF.md`](BRIEF.md) y el sistema visual en [`docs/THEME.md`](docs/THEME.md).
 
-## Datos y licencias
+## ◈ Datos y licencias
 
 Las composiciones derivan de recursos abiertos del proyecto Liberated Pixel Cup:
 
@@ -59,7 +95,7 @@ Se usó el commit `4963a69795255fb15a934c47f478a8bdcf3668f5`. El pipeline vincul
 
 LPC mezcla licencias como CC0, CC-BY, CC-BY-SA, OGA-BY y GPL. Este proyecto conserva autores, licencias y URLs, y no presenta el material base como propietario.
 
-## Reproducir la fase 2
+## ⟡ Preparación del dataset
 
 Desde la raíz del repositorio:
 
@@ -93,7 +129,7 @@ Salidas principales:
 - `artifacts/metrics/dataloader_smoke_test.json`: contrato tensorial;
 - `docs/LPC_CREDITS_USED.csv`: atribución por capa.
 
-## Experimentos pre-registrados
+## ⚗ Experimentos pre-registrados
 
 | ID | Pérdida | Estabilización | Variable modificada |
 |---|---|---|---|
@@ -103,7 +139,7 @@ Salidas principales:
 
 Los tres experimentos usarán los mismos datos, arquitectura, semilla, ruido fijo, optimizadores y 60 épocas. El diseño completo está en [`docs/PLAN_EXPERIMENTAL.md`](docs/PLAN_EXPERIMENTAL.md).
 
-## Implementación y smoke test
+## ⚙ Implementación y smoke test
 
 La fase 3 incorporó:
 
@@ -116,6 +152,8 @@ La fase 3 incorporó:
 - checkpoints atómicos con modelos, optimizadores, ruido fijo, estados aleatorios y estado de barajado del `DataLoader`;
 - validación de guardado/recarga con salida idéntica.
 
+Se eligió DCGAN porque el corpus es homogéneo, trabaja a resolución fija de 64 × 64, cabe en los recursos de Colab y permite aislar la pérdida y la estabilización sin cambiar simultáneamente la arquitectura. Es una decisión de control y trazabilidad experimental, no una afirmación de estado del arte.
+
 Para repetir el diagnóstico:
 
 ```powershell
@@ -126,7 +164,8 @@ El smoke test real utilizó CPU, batch 8 y ocho pasos. Todas las pérdidas fuero
 
 ![Curvas del smoke test](artifacts/smoke_test/smoke_training_curves.png)
 
-## Entrenamiento controlado — puntos 6 a 8 del plan
+<a id="experimentos"></a>
+## ◇ Entrenamiento controlado — puntos 6 a 8 del plan
 
 Los tres experimentos completaron el protocolo pre-registrado: 4,096 imágenes, batch 64, 64 pasos por época, arquitectura idéntica, semilla de modelo `42` y el mismo ruido fijo con semilla `777`. Solo cambiaron la pérdida o la normalización espectral según el diseño A/B/C.
 
@@ -138,7 +177,7 @@ Los tres experimentos completaron el protocolo pre-registrado: 4,096 imágenes, 
 
 Las magnitudes BCE y hinge no se comparan directamente. La decisión usa la trayectoria completa, el mismo ruido fijo y revisión visual: el baseline conserva personajes reconocibles y diversidad final de 0.2585; hinge colapsa a una plantilla casi única, termina en 0.0136 y acumula 23 épocas con `loss_D < 1e-3`; la variante con normalización espectral mantiene la mayor diversidad final (0.2659) y media de las últimas diez épocas (0.2671), además de la mejor variedad cromática observada.
 
-Por estas señales, **C · BCE + spectral normalization** queda seleccionado provisionalmente. La decisión debe confirmarse con vecinos ResNet18, MSE y el lote de 200 candidatos.
+Por estas señales, y después de confirmar el resultado con vecinos ResNet18, MSE, la selección 10/200 y la regeneración exacta, **C · BCE + spectral normalization** es el modelo final. La selección no se basó en comparar directamente escalas incompatibles de pérdida.
 
 ![Hitos del mismo ruido fijo](artifacts/phase8/fixed_noise_milestones.png)
 
@@ -167,7 +206,7 @@ python scripts\compare_experiments.py
 
 El checkpoint completo se mantiene como archivo rodante para limitar el uso de disco; en las épocas 5, 10, 15, ..., 60 se conserva además una instantánea liviana del generador y su rejilla fija.
 
-## Fase 9: vecinos más cercanos
+## ⌁ Fase 9: vecinos más cercanos
 
 [`scripts/analyze_phase9_neighbors.py`](scripts/analyze_phase9_neighbors.py) genera las 16 muestras del ruido fijo del checkpoint C y compara cada una contra las 4,096 imágenes de entrenamiento. Usa ResNet18 IMAGENET1K_V1 sin su capa final, embeddings normalizados y similitud coseno; el MSE en píxeles funciona como comprobación secundaria.
 
@@ -190,9 +229,9 @@ python scripts\analyze_phase9_neighbors.py --device auto
 
 El notebook de Colab también incluye estas celdas y respalda `artifacts/phase9/` en Drive.
 
-## Fase 10: generación y selección transparente 10/200
+## ✣ Fase 10: selección transparente 10/200
 
-[`scripts/run_phase10_selection.py`](scripts/run_phase10_selection.py) implementa la fase sin escribir todavía la galería final ni los vectores `z` reservados para la fase 11:
+[`scripts/run_phase10_selection.py`](scripts/run_phase10_selection.py) implementa la selección técnica previa a la persistencia de la galería y los vectores `z` de la fase 11:
 
 1. exige que la fase 9 haya aprobado con el mismo hash de checkpoint;
 2. genera exactamente 200 candidatos con semilla `20261011`;
@@ -214,9 +253,10 @@ Las métricas completas están en `artifacts/phase10/candidate_metrics.csv`; la 
 
 ![Selección técnica 10/200](artifacts/phase10/selected_10.png)
 
-## Galería y prueba de novedad — puntos 10 y 11 del plan
+<a id="galeria"></a>
+## ✦ Galería y prueba de novedad — puntos 10 y 11 del plan
 
-La implementación cumple el protocolo obligatorio sin presentar resultados prematuros:
+La implementación final cumple el protocolo obligatorio:
 
 - exige un checkpoint de al menos 60 épocas antes de escribir `galeria/`;
 - genera exactamente 200 candidatos con semilla `20261011` y conserva sus vectores `z`;
@@ -234,7 +274,7 @@ python scripts\check_phase5_readiness.py
 python scripts\smoke_test_evaluation.py
 ```
 
-Después de aprobar la fase 9, las fases 10–11 ejecutarán:
+La galería final se reconstruye y valida con:
 
 ```powershell
 python scripts\build_gallery.py --experiment bce_spectral_norm
@@ -245,11 +285,27 @@ Los pesos oficiales de ResNet18 ya están en la caché de este equipo. En un run
 
 > **Resultado actual honesto:** la galería de fase 11 fue regenerada desde el checkpoint y sus vectores `z`; los diez hashes son únicos, la selección coincide con fase 10 y la diferencia RGB máxima es cero.
 
-## Presentación regenerable — punto 14 del plan
+| # | Personaje | Rol | Candidato | Coseno vecino | MSE |
+|---:|---|---|---:|---:|---:|
+| 1 | Aelira | Oráculo del Velo | 100 | 0.6981 | 0.01489 |
+| 2 | Bram | Guardián rúnico | 35 | 0.7911 | 0.01485 |
+| 3 | Cyran | Arcanista de ceniza | 144 | 0.7676 | 0.03245 |
+| 4 | Delyra | Exploradora del musgo | 141 | 0.7593 | 0.02025 |
+| 5 | Edrik | Alquimista solar | 114 | 0.7449 | 0.02029 |
+| 6 | Faelor | Centinela de amatista | 15 | 0.7660 | 0.03430 |
+| 7 | Ilyne | Tejedora de grietas | 48 | 0.7426 | 0.01655 |
+| 8 | Kael | Custodio de la brasa | 20 | 0.7482 | 0.01530 |
+| 9 | Mireth | Cartógrafa astral | 0 | 0.7804 | 0.02499 |
+| 10 | Nyra | Vigía del abismo | 39 | 0.7644 | 0.02135 |
+
+**Reflexión final.** Bram es el personaje más difícil de defender como nuevo porque alcanza el mayor coseno frente a una imagen real (`0.7911`). Comparte la silueta global, la pose y parte de la gramática cromática del vecino, aunque la composición generada no es una copia exacta (`MSE 0.01485`). Esto indica que la GAN aprendió bien la gramática frontal y restringida de LPC y recombinó atributos superficiales, pero su diversidad estructural sigue limitada por una única pose y bases anatómicas compartidas.
+
+<a id="presentacion"></a>
+## ◫ Presentación regenerable — punto 14 del plan
 
 [`presentation/presentacion.html`](presentation/presentacion.html) es la versión interactiva para exponer: navegación por teclado, pantalla completa, vista general, diseño responsivo y actualización desde artefactos reales. [`presentation/presentacion.pdf`](presentation/presentacion.pdf) funciona como informe entregable y respeta el máximo de 12 diapositivas. Ambas incorporan la matriz exigida y cubren universo, datos, arquitectura, hipótesis A/B/C, ruido fijo, curvas, fallos, galería, vecinos, conclusiones y reflexión.
 
-La presentación no contiene métricas escritas a mano: [`scripts/build_presentation.py`](scripts/build_presentation.py) lee los artefactos vigentes, genera `presentation/generated_results.tex`, compila con XeLaTeX y comprueba el número de páginas, el formato 16:9 y la presencia de texto. La versión HTML refleja la auditoría real de fase 9 y la selección técnica de fase 10; la galería definitiva permanece pendiente únicamente de la fase 11.
+La presentación no contiene métricas escritas a mano: [`scripts/build_presentation.py`](scripts/build_presentation.py) lee los artefactos vigentes, genera `presentation/generated_results.tex`, compila con XeLaTeX y comprueba el número de páginas, el formato 16:9 y la presencia de texto. La versión HTML refleja las auditorías de fases 8–11 y muestra la galería definitiva, sus vecinos y la reflexión final.
 
 La versión web se actualiza y valida con:
 
@@ -266,7 +322,7 @@ python scripts\build_presentation.py
 
 Los resultados de validación quedan en `artifacts/presentation/build_status.json` y `html_status.json`. La tipografía GNU FreeSans se incluye con su licencia para que la apariencia sea reproducible.
 
-## Fase 7 completada: entrenamiento reanudable en Colab
+## ☁ Entrenamiento reanudable en Colab
 
 [`notebooks/02_entrenamiento_colab.ipynb`](notebooks/02_entrenamiento_colab.ipynb) guía la ejecución GPU sin cambiar el protocolo A/B/C. Reconstruye el dataset en el disco rápido del runtime, restaura avances desde Drive y usa `--backup-root` para reflejar checkpoints, métricas y ruido fijo al terminar cada época.
 
@@ -278,14 +334,46 @@ Cambios de seguridad para sesiones interrumpibles:
 - el notebook exige CUDA y verifica que no existan épocas duplicadas después de reanudar;
 - el descargador `scripts/fetch_lpc.py` funciona en Linux, Windows y Colab.
 
-Las fases 7–10 ya terminaron. Los artefactos de métricas, muestras, vecinos y selección quedaron generados con el checkpoint C final de época 60. GitHub ignora los checkpoints pesados por diseño; el archivo debe conservarse además en Drive o mediante Git LFS.
+Las fases 7–11 ya terminaron. Los artefactos de métricas, muestras, vecinos, selección y galería quedaron generados con el checkpoint C final de época 60. Los experimentos A y B se conservan como métricas, curvas y rejillas comparativas; el único peso oficial distribuido es C, el modelo seleccionado. GitHub ignora los checkpoints pesados por diseño, por lo que ese archivo se publica como activo de una versión de GitHub.
 
-## Trabajo pendiente antes de la entrega
+<a id="reproducibilidad"></a>
+## ↻ Reproducibilidad final
 
-1. Cerrar los puntos 12–14: README, notebook y presentación con la galería definitiva validada.
-2. Ejecutar la matriz de evidencias y validación integral del punto 15 antes de comprimir la entrega.
+Semillas y entorno usados:
 
-## Estructura
+| Componente | Valor |
+|---|---|
+| Dataset | `2026` |
+| Inicialización y entrenamiento | `42` |
+| Ruido fijo | `777` |
+| Lote de 200 candidatos | `20261011` |
+| Python local verificado | `3.13.1` |
+| PyTorch / torchvision | `2.13.0+cpu` / `0.28.0+cpu` |
+| NumPy / pandas | `2.2.2` / `2.2.3` |
+| Matplotlib / Pillow | `3.10.1` / `11.1.0` |
+| scikit-learn / nbformat | `1.8.0` / `5.10.4` |
+
+La tabla documenta el entorno exacto con el que se regeneró y auditó la entrega final. En Colab, `requirements.txt` fija los rangos compatibles usados por el proyecto; el notebook comprueba CUDA y las dependencias al iniciar.
+
+El archivo oficial es `checkpoints/bce_spectral_norm/latest.pt`, pesa aproximadamente 79 MB, corresponde internamente a la época 60 y tiene SHA-256 `b032a9fa92e719b0500e54a7ee14d5c1a691386bb32459d38807305b699b7f80`.
+
+**Descarga pública:** [checkpoint final de Eryndor — GitHub Release v1.0.0](https://github.com/DanielBarillasM/Proyecto-2_Grupo-1_DLYSI_Sec-30/releases/download/v1.0.0/latest.pt).
+
+Tras descargarlo, debe ubicarse en `checkpoints/bce_spectral_norm/latest.pt`. Su hash se valida con `python scripts/validate_delivery.py`; así, la galería puede regenerarse desde los pesos, `galeria/latents.npz` y el manifiesto versionado.
+
+Validación integral desde la raíz:
+
+```powershell
+python scripts\build_notebook.py
+python scripts\build_colab_notebook.py
+python scripts\build_html_presentation.py
+python scripts\build_presentation.py
+python scripts\validate_delivery.py
+```
+
+La matriz está en [`docs/MATRIZ_EVIDENCIAS.md`](docs/MATRIZ_EVIDENCIAS.md) y el último dictamen automatizado en `artifacts/delivery/validation.json`.
+
+## ⌘ Estructura del repositorio
 
 ```text
 .
@@ -294,11 +382,12 @@ Las fases 7–10 ya terminaron. Los artefactos de métricas, muestras, vecinos y
 ├── configs/experiments.yaml
 ├── data/raw/                # Clon LPC selectivo, no versionado
 ├── data/processed/          # Dataset generado, no versionado
-├── docs/                    # Plan, tema y atribuciones
+├── docs/                    # Plan, tema, atribuciones y matriz de evidencias
 ├── galeria/                 # Diez salidas finales de la GAN
 ├── notebooks/01_proyecto_gan.ipynb
 ├── notebooks/02_entrenamiento_colab.ipynb
 ├── presentation/            # Fuente LaTeX, tipografía y PDF de 12 diapositivas
+├── report/                  # Informe final en LaTeX
 ├── scripts/fetch_lpc.ps1
 ├── scripts/fetch_lpc.py
 ├── scripts/prepare_dataset.py
@@ -319,6 +408,7 @@ Las fases 7–10 ya terminaron. Los artefactos de métricas, muestras, vecinos y
 ├── scripts/build_html_presentation.py
 ├── scripts/build_colab_notebook.py
 ├── scripts/validate_gallery.py
+├── scripts/validate_delivery.py
 ├── src/data.py
 ├── src/evaluation.py
 ├── src/losses.py
@@ -328,7 +418,7 @@ Las fases 7–10 ya terminaron. Los artefactos de métricas, muestras, vecinos y
 └── requirements.txt
 ```
 
-## Transparencia sobre IA
+## ◎ Transparencia sobre IA
 
 Se utilizó un asistente de IA para estructurar el repositorio, proponer y revisar código, apoyar la dirección creativa y documentar la metodología. Los integrantes deben verificar las ejecuciones, interpretar los resultados y defender las decisiones. Ninguna imagen de un generador externo se incorporó al dataset ni podrá presentarse como salida final de la GAN.
 

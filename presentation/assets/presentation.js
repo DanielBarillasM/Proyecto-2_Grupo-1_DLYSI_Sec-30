@@ -45,7 +45,7 @@
     metricHost.appendChild(row);
   });
   document.querySelector("#training-state").textContent = data.training_complete
-    ? `Fase 8 completa · modelo provisional: ${data.selected_experiment}.`
+    ? `Modelo final: ${data.selected_experiment} · 60/60 épocas y auditoría posterior aprobada.`
     : "Resultado parcial: la comparación final sigue bloqueada.";
   document.querySelector("#phase9-checkpoint").textContent =
     `${data.phase9_checkpoint_epoch}/${data.phase9_target_epoch}`;
@@ -73,7 +73,7 @@
     document.querySelector("#gallery-pending").hidden = true;
     document.querySelector("#phase10-ready").hidden = false;
     document.querySelector("#phase10-detail").textContent =
-      `${data.phase10_eligible} elegibles · coseno medio ${data.phase10_mean_similarity} · MSE medio ${data.phase10_mean_mse}. Fase 11 pendiente.`;
+      `${data.phase10_eligible} elegibles · coseno medio ${data.phase10_mean_similarity} · MSE medio ${data.phase10_mean_mse}.`;
     document.querySelector("#learning-limit").textContent =
       `Los 10 seleccionados tienen ${data.phase10_exact_duplicates} duplicados exactos frente al entrenamiento.`;
     document.querySelector("#reflection").innerHTML =
@@ -89,10 +89,10 @@
     document.querySelector("#phase9-ready").hidden = true;
     document.querySelector("#neighbors-ready").hidden = false;
     document.querySelector("#learning-limit").textContent = "La galería validada se regenera con diferencia RGB máxima igual a cero.";
-    document.querySelector("#reflection").innerHTML = `<strong>${data.hardest_character}</strong> fue el caso más difícil de defender como nuevo (coseno ${data.hardest_similarity}).`;
-    document.querySelector("#matrix-gallery").textContent = "Galería validada y tasa declarada.";
-    document.querySelector("#matrix-gallery-limit").textContent = "Selección humana inevitable.";
-    document.querySelector("#matrix-neighbors").textContent = "Novedad medida con coseno y MSE.";
+    document.querySelector("#reflection").innerHTML = `<strong>${data.hardest_character}, ${data.hardest_role}</strong>, fue el caso más difícil de defender como nuevo (coseno ${data.hardest_similarity}; MSE ${data.hardest_mse}). Comparte la gramática frontal y la silueta del conjunto, pero no es una copia exacta: la GAN aprendió bien el estilo LPC y todavía ofrece poca diversidad estructural.`;
+    document.querySelector("#matrix-gallery").textContent = "10 PNG únicos; selección 10/200 y regeneración exacta.";
+    document.querySelector("#matrix-gallery-limit").textContent = "Nombres asignados después del ranking; una sola pose.";
+    document.querySelector("#matrix-neighbors").textContent = "0 duplicados; novedad medida con coseno y MSE.";
   }
 
   slides.forEach((slide, index) => {

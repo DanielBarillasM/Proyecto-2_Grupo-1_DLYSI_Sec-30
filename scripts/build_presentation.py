@@ -94,10 +94,12 @@ def write_generated_results() -> dict[str, object]:
         lines.extend(
             [
                 rf"\newcommand{{\FinalExperiment}}{{{tex_escape(hardest['experiment'])}}}",
-                rf"\newcommand{{\SelectionRate}}{{{len(gallery)}/200 = {len(gallery) / 200:.0%}}}",
+                rf"\newcommand{{\SelectionRate}}{{{len(gallery)}/200 = {len(gallery) * 100 // 200}\%}}",
                 rf"\newcommand{{\MeanNeighborSimilarity}}{{{gallery['nearest_cosine_similarity'].mean():.4f}}}",
                 rf"\newcommand{{\HardestCharacter}}{{{tex_escape(hardest['name'])}}}",
+                rf"\newcommand{{\HardestRole}}{{{tex_escape(hardest['role'])}}}",
                 rf"\newcommand{{\HardestSimilarity}}{{{float(hardest['nearest_cosine_similarity']):.4f}}}",
+                rf"\newcommand{{\HardestMSE}}{{{float(hardest['nearest_pixel_mse']):.5f}}}",
                 rf"\newcommand{{\RegenerationDelta}}{{{int(validation['regeneration_max_pixel_delta'])}}}",
             ]
         )
@@ -108,7 +110,9 @@ def write_generated_results() -> dict[str, object]:
                 r"\newcommand{\SelectionRate}{10/200 = 5\% planificado}",
                 r"\newcommand{\MeanNeighborSimilarity}{pendiente}",
                 r"\newcommand{\HardestCharacter}{pendiente}",
+                r"\newcommand{\HardestRole}{pendiente}",
                 r"\newcommand{\HardestSimilarity}{pendiente}",
+                r"\newcommand{\HardestMSE}{pendiente}",
                 r"\newcommand{\RegenerationDelta}{pendiente}",
             ]
         )

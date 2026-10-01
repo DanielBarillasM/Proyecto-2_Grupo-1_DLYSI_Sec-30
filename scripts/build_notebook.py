@@ -36,7 +36,7 @@ cells = [
 Deep Learning · 2026
 
 > **Integrantes:** Pablo Daniel Barillas Moreno · Wilson Alejandro Calderón  
-> **Estado:** fases 9–10 completadas con el checkpoint C verificado en época 60.
+> **Estado:** entrega final; fases 1–15 verificadas con el checkpoint C en época 60.
 > **Regla principal:** ninguna imagen final puede proceder de un generador externo.
 """
     ),
@@ -103,7 +103,7 @@ Eryndor quedó fragmentado después de la **Ruptura Celeste**. La magia se solid
 
 <div class="callout magic"><strong>Lenguaje visual.</strong> Pixel art detallado de 64 × 64, cuerpo completo, perspectiva ortográfica elevada, materiales gastados y una paleta oscura con acentos de cian mineral, oro brasa y amatista.</div>
 
-Roles narrativos posibles: guardián rúnico, arcanista de ceniza, explorador del musgo, alquimista solar y oráculo del abismo. Los nombres y roles finales se asignarán después de observar la galería, no antes de entrenar.
+Los diez personajes finales reciben nombres y roles después de la selección técnica: Aelira, Bram, Cyran, Delyra, Edrik, Faelor, Ilyne, Kael, Mireth y Nyra. Esta capa narrativa no intervino en el entrenamiento ni en el ranking.
 """
     ),
     md(
@@ -292,11 +292,11 @@ runtime_audit
         r"""
 ## 6. Experimentos pre-registrados
 
-| Experimento | Pérdida | Estabilización | Hipótesis resumida |
+| Experimento | Pérdida | Estabilización | Hipótesis previa y criterio |
 |---|---|---|---|
-| A · Baseline | BCE no saturante | Ninguna adicional | Debe producir siluetas reconocibles en un conjunto consistente. |
-| B · Pérdida | Hinge | Ninguna adicional | Puede mejorar nitidez y mantener gradientes útiles. |
-| C · Estabilización | BCE no saturante | Spectral normalization en D | Debe reducir periodos de dominio excesivo del discriminador. |
+| A · Baseline | BCE no saturante | Ninguna adicional | Creemos que la DCGAN con BCE no saturante producirá siluetas reconocibles porque el dataset tiene resolución y estilo consistentes. Lo consideraremos útil si la rejilla fija muestra progreso sin que la mayoría de las muestras converja a una sola apariencia. |
+| B · Pérdida | Hinge | Ninguna adicional | Creemos que hinge loss mejorará la nitidez y la separación entre rasgos porque mantiene gradientes útiles sin interpretar la salida del discriminador como una probabilidad calibrada. Lo consideraremos útil si mejora la calidad visual y la diversidad sin aumentar la cercanía a imágenes de entrenamiento. |
+| C · Estabilización | BCE no saturante | Spectral normalization en D | Creemos que la normalización espectral estabilizará al discriminador porque limita la magnitud efectiva de sus capas. Lo consideraremos útil si reduce periodos prolongados de dominio de D y mantiene una evolución más consistente en el ruido fijo. |
 
 Los datos, semilla, arquitectura, épocas, optimizadores y ruido de evaluación permanecerán iguales. El plan detallado está en `docs/PLAN_EXPERIMENTAL.md`.
 """
@@ -310,6 +310,8 @@ experimentos
     md(
         r"""
 ## 7. Implementación DCGAN
+
+Se eligió DCGAN porque el corpus es visualmente homogéneo y tiene resolución fija de 64 × 64, la arquitectura cabe en los recursos de Google Colab y ofrece una base suficientemente simple para aislar el efecto de la pérdida y de la estabilización. La elección busca trazabilidad experimental y no pretende afirmar que DCGAN sea el estado del arte.
 
 ### 7.1 Generador
 
@@ -456,7 +458,7 @@ display(HTML(f"""
   <div class="kpi"><span>Experimentos auditados</span><strong>{PHASE8['experiments']} / 3</strong></div>
   <div class="kpi"><span>Progreso por corrida</span><strong>{PHASE8['target_epochs']} / {PHASE8['target_epochs']}</strong></div>
   <div class="kpi"><span>Registros válidos</span><strong>{PHASE8['epoch_rows']} + {PHASE8['step_rows']}</strong></div>
-  <div class="kpi"><span>Selección provisional</span><strong>{PHASE8['selected_experiment']}</strong></div>
+  <div class="kpi"><span>Modelo final</span><strong>{PHASE8['selected_experiment']}</strong></div>
 </div>
 """))
 '''
@@ -480,9 +482,9 @@ display(IPyImage(
 - `baseline_bce` aprendió personajes reconocibles y conservó diversidad: terminó en **0.2585**, con media **0.2508** en las últimas diez épocas.
 - `hinge_loss` colapsó hacia una plantilla casi única: terminó en **0.0136** y acumuló **23 épocas** con `loss_D < 1e-3`. La hipótesis B queda rechazada bajo esta configuración.
 - `bce_spectral_norm` sostuvo la mayor diversidad final (**0.2659**) y media en las últimas diez épocas (**0.2671**), junto con la mejor variedad cromática observada.
-- Por ello se selecciona provisionalmente **C · BCE + spectral normalization** para las fases 9–10.
+- Por ello se preseleccionó **C · BCE + spectral normalization** para las auditorías de las fases 9–11.
 
-La selección todavía debe confirmarse con vecinos ResNet18, MSE y el análisis de 200 candidatos. La distancia L2 del ruido fijo es un indicador útil, no una métrica perceptual definitiva.
+Los vecinos ResNet18, el MSE, el análisis de 200 candidatos y la regeneración exacta confirmaron después esa decisión. La distancia L2 del ruido fijo sigue siendo un indicador útil, no una métrica perceptual definitiva.
 """
     ),
     md(
@@ -499,7 +501,7 @@ Se registraron pérdidas de G y D, logits medios sobre datos reales y falsos, di
 
 ### 10.3 Vecinos más cercanos
 
-Cada personaje final se comparará contra todas las imágenes de entrenamiento mediante embeddings de ResNet18 y similitud coseno, con MSE en píxeles como comprobación secundaria.
+Cada personaje final se comparó contra todas las imágenes de entrenamiento mediante embeddings de ResNet18 y similitud coseno, con MSE en píxeles como comprobación secundaria.
 """
     ),
     md(
@@ -513,75 +515,69 @@ Cada personaje final se comparará contra todas las imágenes de entrenamiento m
 5. Escoger 10 personajes y declarar una tasa de selección de `10/200 = 5%`.
 6. Guardar PNG, vector latente, semilla, vecino, similitud y comentario en `manifest.csv`.
 
-Los nombres y clases de personaje se agregarán después de la selección como trabajo creativo adicional; no afectarán el criterio técnico.
+Los nombres y clases de personaje se agregaron después de la selección como trabajo creativo adicional; no afectaron el criterio técnico.
 """
     ),
     md(
         r"""
-## 12. Implementación de la fase 5
+## 12. Galería final y procedencia reproducible
 
-El pipeline final ya está implementado y las métricas alcanzaron 60 épocas. La auditoría interna detectó que los tres `latest.pt` locales todavía contienen la época 1; por eso no se usarán para fabricar vecinos o galería. Los pesos oficiales de ResNet18 sí están disponibles.
+La fase 11 persistió exactamente los diez candidatos elegidos en la fase 10. Cada fila conserva nombre, rol, índice de candidato, semilla, hash del PNG, vector latente, vecino real, similitud coseno, MSE y tasa `10/200 = 5%`. Los nombres se asignaron después del ranking y no alteraron la selección.
 
-Cuando el entrenamiento esté completo, el flujo será:
-
-1. generar exactamente 200 candidatos en CPU con semilla `20261011`;
-2. derivar límites de ocupación y contraste desde las 4,096 imágenes reales;
-3. extraer características con ResNet18 preentrenada, sin reemplazo silencioso por pesos aleatorios;
-4. localizar el vecino real con máxima similitud coseno y calcular MSE en píxeles;
-5. elegir 10 mediante una selección greedy que combina novedad, calidad técnica y separación entre elegidos;
-6. guardar PNG, `latents.npz`, `manifest.csv`, procedencia, rejilla y figura de vecinos;
-7. regenerar las diez imágenes y exigir diferencia máxima RGB igual a cero.
+```powershell
+python scripts\build_gallery.py --experiment bce_spectral_norm --overwrite
+python scripts\validate_gallery.py
+```
 """
     ),
     code(
         r'''
-readiness_path = ROOT / "artifacts" / "gallery" / "readiness.json"
-pipeline_smoke_path = ROOT / "artifacts" / "gallery" / "pipeline_smoke_test.json"
-if not readiness_path.exists() or not pipeline_smoke_path.exists():
-    raise FileNotFoundError(
-        "Ejecute scripts/check_phase5_readiness.py y scripts/smoke_test_evaluation.py"
-    )
-with open(readiness_path, encoding="utf-8") as file:
-    PHASE5 = json.load(file)
-with open(pipeline_smoke_path, encoding="utf-8") as file:
-    PHASE5_SMOKE = json.load(file)
+gallery_manifest_path = ROOT / "galeria" / "manifest.csv"
+gallery_latents_path = ROOT / "galeria" / "latents.npz"
+gallery_provenance_path = ROOT / "galeria" / "provenance.json"
+gallery_validation_path = ROOT / "artifacts" / "gallery" / "validation.json"
 
-assert PHASE5_SMOKE["status"] == "passed"
+gallery_manifest = pd.read_csv(gallery_manifest_path)
+gallery_latents = np.load(gallery_latents_path)["z"]
+with open(gallery_provenance_path, encoding="utf-8") as file:
+    GALLERY_PROVENANCE = json.load(file)
+with open(gallery_validation_path, encoding="utf-8") as file:
+    GALLERY_VALIDATION = json.load(file)
+
+assert GALLERY_VALIDATION["status"] == "passed"
+assert len(gallery_manifest) == 10
+assert gallery_manifest["sha256"].nunique() == 10
+assert tuple(gallery_latents.shape) == (10, 128, 1, 1)
+assert GALLERY_VALIDATION["phase10_selection_match"]
+assert GALLERY_VALIDATION["regeneration_max_pixel_delta"] == 0
+
 display(HTML(f"""
 <div class="kpis">
-  <div class="kpi"><span>Pipeline</span><strong>{PHASE5_SMOKE['status'].upper()}</strong></div>
-  <div class="kpi"><span>Preparación final</span><strong>{PHASE5['status'].upper()}</strong></div>
-  <div class="kpi"><span>Candidatos</span><strong>{CONFIG['gallery']['candidate_count']}</strong></div>
-  <div class="kpi"><span>Selección declarada</span><strong>10 / 200</strong></div>
+  <div class="kpi"><span>PNG únicos</span><strong>{gallery_manifest['sha256'].nunique()} / 10</strong></div>
+  <div class="kpi"><span>Selección</span><strong>{len(gallery_manifest)} / {GALLERY_PROVENANCE['candidate_count']}</strong></div>
+  <div class="kpi"><span>Latentes</span><strong>{list(gallery_latents.shape)}</strong></div>
+  <div class="kpi"><span>Delta RGB</span><strong>{GALLERY_VALIDATION['regeneration_max_pixel_delta']}</strong></div>
 </div>
 """))
 
-phase5_progress = pd.DataFrame([
-    {
-        "Experimento": key,
-        "Métricas": value,
-        "Checkpoint": PHASE5["checkpoint_epochs"].get(key),
-        "Objetivo": PHASE5["target_epochs"],
-    }
-    for key, value in PHASE5["completed_epochs"].items()
-])
-display(phase5_progress.style.hide(axis="index"))
-print("Bloqueos activos:")
-for reason in PHASE5["blocking_reasons"]:
-    print(f"- {reason}")
+display(gallery_manifest[[
+    "rank", "name", "role", "candidate_index",
+    "nearest_cosine_similarity", "nearest_pixel_mse"
+]].style.format({
+    "nearest_cosine_similarity": "{:.4f}",
+    "nearest_pixel_mse": "{:.5f}",
+}).hide(axis="index"))
+display(IPyImage(filename=str(ROOT / "artifacts" / "gallery" / "final_gallery_grid.png"), width=1050))
+display(IPyImage(filename=str(ROOT / "artifacts" / "gallery" / "nearest_neighbors.png"), width=1100))
 '''
     ),
     md(
         r"""
-### 12.1 Comandos finales
+### 12.1 Reflexión sobre novedad
 
-```powershell
-python scripts\check_phase5_readiness.py
-python scripts\build_gallery.py --experiment <experimento_seleccionado>
-python scripts\validate_gallery.py
-```
+**Bram, Guardián rúnico**, es el caso más difícil de defender como nuevo: tiene el mayor coseno frente a una imagen de entrenamiento (`0.7911`) y un MSE de `0.01485`. Comparte la silueta global, la pose y parte de la gramática cromática del vecino, pero no es una copia exacta y la composición de atributos es diferente.
 
-<div class="callout gold"><strong>Resultado actual honesto.</strong> C fue auditado con su checkpoint final de época 60. Las fases 9–10 contienen resultados GAN reales; la galería definitiva continúa vacía porque su persistencia, vectores latentes y manifiesto corresponden a la fase 11.</div>
+Esto indica que la GAN aprendió la gramática frontal restringida de LPC y recombinó rasgos superficiales; no demuestra una diversidad estructural amplia. La limitación es coherente con un dataset de una sola pose y bases anatómicas compartidas.
 """
     ),
     md(
@@ -702,15 +698,19 @@ Los archivos `candidate_metrics.csv`, `selected_candidates.csv`, `candidate_over
     ),
     md(
         r"""
-## 15. Estado actual y fase 10
+## 15. Conclusiones y estado final
 
-<div class="callout magic"><strong>Entrenamiento y análisis completos.</strong> Los tres experimentos llegaron a 60/60 en CUDA. La auditoría favorece provisionalmente <code>bce_spectral_norm</code>: mantiene diversidad final de 0.2659, mientras hinge cae a 0.0136 y muestra colapso de modo.</div>
+<div class="callout magic"><strong>Modelo final.</strong> Los tres experimentos llegaron a 60/60 en CUDA. <code>bce_spectral_norm</code> quedó seleccionado tras mantener diversidad final de 0.2659 y superar las auditorías de vecinos, selección 10/200 y regeneración exacta. Hinge cayó a 0.0136 y mostró colapso de modo.</div>
 
-<div class="callout gold"><strong>Fases 9–10 completadas.</strong> La auditoría de vecinos no encontró duplicados exactos ni banderas de revisión. De 200 candidatos reales, 97 fueron elegibles y 10 quedaron seleccionados mediante la regla pre-registrada.</div>
+<div class="callout gold"><strong>Entrega verificable.</strong> La auditoría no encontró duplicados exactos ni banderas de revisión. De 200 candidatos reales, 97 fueron elegibles y 10 quedaron seleccionados mediante la regla pre-registrada. Sus PNG y vectores <code>z</code> regeneran con diferencia RGB máxima igual a cero.</div>
 
-### Siguiente fase
+### Conclusiones
 
-- pasar a la fase 11 para guardar PNG, vectores <code>z</code>, manifiesto y regeneración exacta.
+- La normalización espectral fue la estabilización más útil en este protocolo controlado.
+- Hinge no mejoró el resultado: el colapso observado obliga a rechazar su hipótesis bajo esta configuración.
+- La galería es novedosa respecto de coincidencias exactas, pero la pose única limita la diversidad estructural.
+- ResNet18 y MSE aportan evidencia cuantitativa, no una prueba absoluta de originalidad artística.
+- El checkpoint, las semillas, el manifiesto y los vectores latentes permiten reconstruir el resultado.
 
 ### Referencias metodológicas
 

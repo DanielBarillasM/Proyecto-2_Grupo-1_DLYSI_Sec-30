@@ -175,7 +175,8 @@
   }}}
 \end{minipage}\par
 \vspace{0.28in}
-\colorbox{DeepPurple}{\parbox{11.75in}{\centering\large
+\colorbox{DeepPurple}{\parbox{11.75in}{\centering\normalsize
+  \textbf{Elección:} DCGAN coincide con $64\times64$, cabe en Colab y permite aislar pérdida y estabilización.\\[4pt]
   Adam · $lr=2\times10^{-4}$ · $\beta=(0.5,0.999)$ · batch 64 · semilla 42 · 60 épocas
 }}
 }
@@ -185,11 +186,11 @@
 \eyebrow{Protocolo pre-registrado}\par
 \vspace{0.14in}
 \begin{tabularx}{11.95in}{>{\bfseries\color{MineralCyan}}p{0.45in} p{1.75in} p{2.1in} X}
-  ID & Pérdida & Estabilización & Hipótesis previa\\[4pt]
+  ID & Pérdida & Estabilización & Hipótesis + criterio\\[4pt]
   \hline\\[-8pt]
-  A & BCE no saturante & Baseline & Producirá siluetas reconocibles por la consistencia del dataset.\\[7pt]
-  B & Hinge loss & Igual a A & Mantendrá gradientes útiles y puede mejorar nitidez y diversidad.\\[7pt]
-  C & BCE no saturante & Spectral norm en D & Limitará a D y reducirá periodos prolongados de dominio.\\
+  A & BCE no saturante & Baseline & Corpus consistente; útil si progresa sin converger a una apariencia.\\[7pt]
+  B & Hinge loss & Igual a A & Preserva gradientes; útil si mejora nitidez y diversidad.\\[7pt]
+  C & BCE no saturante & Spectral norm en D & Limita D; útil si reduce dominio y sostiene evolución.\\
 \end{tabularx}
 \vspace{0.32in}
 \colorbox{Obsidian}{\parbox[c][1.55in][c]{11.95in}{\hspace{0.28in}\parbox{11.35in}{
@@ -204,22 +205,22 @@
 \slide{05 · Evidencia 1: el mismo ruido a través del tiempo}{
 \begin{minipage}[t]{8.5in}
   \vspace{0pt}
-  \includegraphics[width=8.35in,height=4.75in,keepaspectratio]{../artifacts/experiments/latest_fixed_noise_comparison.png}
+  \includegraphics[width=8.35in,height=4.75in,keepaspectratio]{../artifacts/phase8/fixed_noise_milestones.png}
 \end{minipage}\hfill
 \begin{minipage}[t]{3.25in}
-  \eyebrow{Estado actual}\par
+  \eyebrow{Trayectoria completa}\par
   \vspace{0.12in}
-  {\fontsize{24}{28}\selectfont\bfseries\color{EmberGold}1 / 60}\par
+  {\fontsize{24}{28}\selectfont\bfseries\color{Moss}60 / 60}\par
   {\small épocas por experimento}\par
   \vspace{0.2in}
-  Las tres rejillas siguen dominadas por textura de alta frecuencia. No hay personajes reconocibles todavía.
+  A y C evolucionan hacia personajes reconocibles; hinge converge a una plantilla casi única.
   \vspace{0.2in}
   \colorbox{Obsidian}{\parbox{3.0in}{\vspace{8pt}\hspace{8pt}\parbox{2.7in}{\small
-    Se conservarán hitos en 0, 5, 10, 20, 40 y 60 para detectar convergencia o colapso.
+    Se conservaron los mismos 16 vectores en 0, 5, 10, 20, 40 y 60 para separar evolución de variación aleatoria.
   }\vspace{8pt}}}\par
   \vspace{0.18in}
   {\small\color{MineralCyan}\bfseries Interpretación honesta:}\par
-  Una época valida el pipeline, no la calidad final.
+  Hinge cae a diversidad 0.0136: evidencia visual y cuantitativa de colapso.
 \end{minipage}
 }
 
@@ -230,7 +231,7 @@
   \includegraphics[width=6.45in,height=4.4in,keepaspectratio]{../artifacts/experiments/experiment_comparison.png}
 \end{minipage}\hfill
 \begin{minipage}[t]{5.25in}
-  \eyebrow{Última época disponible}\par
+  \eyebrow{Época final}\par
   \vspace{0.1in}
   \small
   \begin{tabular}{@{}p{1.45in}r r r@{}}
@@ -241,14 +242,10 @@
   \end{tabular}\par
   \vspace{0.22in}
   \colorbox{Obsidian}{\parbox{4.95in}{\vspace{8pt}\hspace{9pt}\parbox{4.55in}{\small
-    \textbf{Lectura:} D separó rápidamente reales y falsos. Hinge mostró la mayor distancia fija inicial, pero BCE y hinge tienen escalas distintas y 1 época no permite un ranking.
+    \textbf{Lectura:} BCE y hinge tienen escalas distintas. Hinge termina con $L_D\approx0$ y diversidad 0.0136; C conserva la mayor diversidad final, 0.2659.
   }\vspace{8pt}}}\par
   \vspace{0.18in}
-  \iftrainingcomplete
-    {\color{Moss}\bfseries Entrenamiento completo; interpretar la trayectoria total.}
-  \else
-    {\color{EmberGold}\bfseries Resultado parcial: las comparaciones finales siguen bloqueadas.}
-  \fi
+  {\color{Moss}\bfseries Modelo final: C, confirmado por vecinos y regeneración exacta.}
 \end{minipage}
 }
 
@@ -258,12 +255,12 @@
   \eyebrow{Señales observadas}\par
   \vspace{0.12in}
   \colorbox{Obsidian}{\parbox[c][3.75in][c]{5.72in}{\hspace{0.25in}\parbox{5.15in}{
-    {\large\bfseries\color{EmberGold}Discriminador dominante al inicio}\par
-    En el smoke test, $L_D$ cayó de 1.879 a 0.153 y $L_G$ subió de 4.970 a 7.522.\\[13pt]
-    {\large\bfseries\color{EmberGold}Rejillas todavía ruidosas}\par
-    Ninguna variante genera una silueta defendible en la época 1.\\[13pt]
-    {\large\bfseries\color{EmberGold}Mode collapse}\par
-    Aún no puede diagnosticarse; se monitorea con ruido fijo y distancia entre muestras.
+    {\large\bfseries\color{EmberGold}Hinge colapsó}\par
+    Acumuló 23 épocas con $L_D<10^{-3}$ y terminó con diversidad fija 0.0136.\\[13pt]
+    {\large\bfseries\color{EmberGold}BCE base fue viable}\par
+    Conservó personajes reconocibles y diversidad final 0.2585.\\[13pt]
+    {\large\bfseries\color{MineralCyan}C fue seleccionada}\par
+    Spectral norm sostuvo diversidad 0.2659 y mayor variedad cromática observada.
   }}}
 \end{minipage}\hfill
 \begin{minipage}[t]{5.72in}
@@ -274,7 +271,7 @@
     \textbf{2.} Checkpoints reanudables con RNG, optimizadores y orden de datos.\\[10pt]
     \textbf{3.} Métricas por paso/época y ruido fijo común.\\[10pt]
     \textbf{4.} Galería bloqueada antes de época 60.\\[10pt]
-    \textbf{5.} Selección 10/200, vecinos ResNet18 y regeneración exacta.
+    \textbf{5.} Selección 10/200, vecinos ResNet18 y regeneración exacta con delta RGB 0.
   }}}
 \end{minipage}\par
 \vspace{0.28in}
@@ -313,7 +310,7 @@
     ResNet18 sin capa final + similitud coseno; MSE en píxeles como control secundario.\\[12pt]
     Similitud media: \textbf{\MeanNeighborSimilarity}\\[8pt]
     Caso más difícil: \textbf{\HardestCharacter}\\[4pt]
-    coseno: \textbf{\HardestSimilarity}\\[14pt]
+    coseno: \textbf{\HardestSimilarity} · MSE: \textbf{\HardestMSE}\\[14pt]
     Un personaje casi idéntico a su vecino no se defiende como nuevo.
   \end{minipage}
 \else
@@ -345,7 +342,7 @@
   \colorbox{Obsidian}{\parbox[c][3.8in][c]{5.68in}{\hspace{0.25in}\parbox{5.12in}{
     Una sola pose, bases anatómicas compartidas y embeddings ImageNet aplicados a pixel art limitan la generalización.\\[13pt]
     \ifgalleryready
-      \textbf{\HardestCharacter} fue el caso más difícil de defender como nuevo (cos=\HardestSimilarity). Ese vecino muestra qué rasgos del universo aprendió la GAN y cuáles pudo recombinar demasiado literalmente.
+      \textbf{\HardestCharacter, \HardestRole} fue el caso más difícil de defender como nuevo (cos=\HardestSimilarity; MSE=\HardestMSE). Comparte pose y gramática visual, pero no es copia exacta: la GAN aprendió el estilo LPC y conserva poca diversidad estructural.
     \else
       \textbf{Reflexión pendiente:} solo podrá responderse después de identificar el personaje con mayor similitud frente a su vecino real.
     \fi
@@ -361,13 +358,13 @@
   Evidencia & Diap. & Conclusión & Limitación\\[3pt]
   \hline
   Universo y datos & 2--3 & Mundo y dataset coherentes, abiertos y auditados. & Una pose y bases anatómicas compartidas.\\
-  Arquitectura GAN & 4 & Contratos tensoriales, pérdidas y checkpoints validados. & Calidad visual pendiente de entrenamiento completo.\\
-  Pérdida y estabilidad & 5--8 & Comparación A/B/C cambia una sola variable. & Estado actual 1/60; no existe ganador.\\
-  Ruido fijo & 6 & Las tres variantes siguen en textura temprana. & Faltan hitos 5, 10, 20, 40 y 60.\\
-  Curvas interpretadas & 7--8 & D domina al inicio; no se confunde $L_D\approx0$ con éxito. & Una época no describe la dinámica final.\\
-  Galería + 10/200 & 9 & \ifgalleryready Galería validada y tasa declarada.\else Pipeline listo y bloqueo correcto.\fi & \ifgalleryready Selección humana inevitable.\else No hay PNG finales todavía.\fi\\
-  Vecinos cercanos & 10 & \ifgalleryready Novedad medida con coseno y MSE.\else Código implementado sin resultados fabricados.\fi & ResNet18 no fue entrenada específicamente para pixel art.\\
-  Conclusión/reflexión & 11 & Alcance y fallos declarados con honestidad. & La respuesta final depende de la galería validada.\\
+  Arquitectura GAN & 4 & Contratos tensoriales, pérdidas y checkpoints validados. & DCGAN limitada a 64 $\times$ 64.\\
+  Pérdida y estabilidad & 5--8 & A/B/C completados; C es el modelo final. & Pérdidas no comparables entre familias.\\
+  Ruido fijo & 6 & Hitos 0, 5, 10, 20, 40 y 60 muestran evolución y colapso. & L2 es solo un proxy de diversidad.\\
+  Curvas interpretadas & 7--8 & Hinge colapsa; C sostiene diversidad 0.2659. & Una corrida por variante.\\
+  Galería + 10/200 & 9 & 10 PNG únicos; tasa 5\% y delta RGB 0. & Nombres asignados después del ranking.\\
+  Vecinos cercanos & 10 & 0 duplicados; novedad medida con coseno y MSE. & ResNet18 no fue entrenada para pixel art.\\
+  Conclusión/reflexión & 11 & Bram revela aprendizaje de la gramática LPC. & Una pose limita diversidad estructural.\\
 \end{tabularx}
 \vspace{0.2in}
 {\scriptsize\color{Lavender}

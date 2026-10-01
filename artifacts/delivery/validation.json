@@ -1,0 +1,81 @@
+{
+  "status": "passed",
+  "checks": {
+    "required_files": {
+      "expected": 15,
+      "missing": []
+    },
+    "dataset": {
+      "images": 4096,
+      "duplicates": 0,
+      "missing": 0,
+      "credited_layers": 254
+    },
+    "experiments": {
+      "runs": 3,
+      "epoch_rows": 180,
+      "target_epochs": 60,
+      "selected": "bce_spectral_norm",
+      "selected_diversity": 0.2658864259719848,
+      "hinge_diversity": 0.0136368749663233
+    },
+    "selection": {
+      "phase9_exact_duplicates": 0,
+      "phase9_screening_flags": 0,
+      "candidates": 200,
+      "eligible": 97,
+      "selected": 10,
+      "rate": 0.05
+    },
+    "gallery": {
+      "images": 10,
+      "unique_hashes": 10,
+      "latents_shape": [
+        10,
+        128,
+        1,
+        1
+      ],
+      "phase10_match": true,
+      "regeneration_max_pixel_delta": 0,
+      "hardest_character": "Bram",
+      "hardest_cosine": 0.7911350727081299,
+      "hardest_mse": 0.0148511352017521
+    },
+    "checkpoint": {
+      "path": "checkpoints/bce_spectral_norm/latest.pt",
+      "epoch": 60,
+      "sha256": "b032a9fa92e719b0500e54a7ee14d5c1a691386bb32459d38807305b699b7f80",
+      "tracked_by_git": false,
+      "public_url": "https://github.com/DanielBarillasM/Proyecto-2_Grupo-1_DLYSI_Sec-30/releases/download/v1.0.0/latest.pt",
+      "delivery_note": "Peso final C publicado como activo de GitHub Release v1.0.0."
+    },
+    "notebook": {
+      "code_cells": 15,
+      "executed_cells": 15,
+      "error_outputs": 0,
+      "execution_ordered": true,
+      "preregistered_hypotheses": 3,
+      "architecture_rationale": true
+    },
+    "presentation": {
+      "html_slides": 12,
+      "pdf_pages": 12,
+      "gallery_ready": true
+    },
+    "documentation": {
+      "stale_phrases": [],
+      "seeds_documented": [
+        2026,
+        42,
+        777,
+        20261011
+      ],
+      "ai_disclosed": true,
+      "checkpoint_url": "https://github.com/DanielBarillasM/Proyecto-2_Grupo-1_DLYSI_Sec-30/releases/download/v1.0.0/latest.pt",
+      "evidence_matrix": "docs/MATRIZ_EVIDENCIAS.md",
+      "report_source": "report/informe_final_eryndor.tex"
+    }
+  },
+  "errors": []
+}

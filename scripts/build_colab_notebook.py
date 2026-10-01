@@ -346,6 +346,8 @@ El control lee la época **dentro** de `latest.pt`; un CSV en 60/60 no sustituye
     ),
     code(
         r'''
+import numpy as np
+
 subprocess.run(
     [sys.executable, "scripts/check_phase9_readiness.py"],
     cwd=RUNTIME_ROOT,
@@ -456,6 +458,63 @@ display(pd.DataFrame([{
 }]).style.format({"Tasa": "{:.1%}", "Coseno medio": "{:.4f}", "MSE medio": "{:.4f}"}).hide(axis="index"))
 
 display(HTML('<div class="phase-note"><strong>Fase 10 ejecutada.</strong> La selección 10/200 y sus figuras quedaron respaldadas en Drive.</div>'))
+'''
+    ),
+    md(
+        r"""
+## 14. Fase 11 · galería final reproducible
+
+Esta sección persiste los diez candidatos de la fase 10, sus vectores `z`, nombres, roles, hashes y procedencia. `--overwrite` es intencional: reconstruye la galería desde el checkpoint y luego exige que coincida exactamente con la selección declarada.
+"""
+    ),
+    code(
+        r'''
+subprocess.run(
+    [
+        sys.executable,
+        "scripts/build_gallery.py",
+        "--experiment", "bce_spectral_norm",
+        "--device", "cuda",
+        "--feature-batch-size", "128",
+        "--overwrite",
+    ],
+    cwd=RUNTIME_ROOT,
+    check=True,
+)
+subprocess.run(
+    [sys.executable, "scripts/validate_gallery.py"],
+    cwd=RUNTIME_ROOT,
+    check=True,
+)
+
+gallery_validation = json.loads(
+    (RUNTIME_ROOT / "artifacts/gallery/validation.json").read_text()
+)
+gallery_manifest = pd.read_csv(RUNTIME_ROOT / "galeria/manifest.csv")
+gallery_latents = np.load(RUNTIME_ROOT / "galeria/latents.npz")["z"]
+
+assert gallery_validation["status"] == "passed"
+assert len(gallery_manifest) == 10
+assert gallery_manifest["sha256"].nunique() == 10
+assert tuple(gallery_latents.shape) == (10, 128, 1, 1)
+assert gallery_validation["phase10_selection_match"]
+assert gallery_validation["regeneration_max_pixel_delta"] == 0
+
+shutil.copytree(RUNTIME_ROOT / "galeria", DRIVE_ROOT / "galeria", dirs_exist_ok=True)
+shutil.copytree(
+    RUNTIME_ROOT / "artifacts/gallery",
+    DRIVE_ROOT / "artifacts/gallery",
+    dirs_exist_ok=True,
+)
+
+display(gallery_manifest[[
+    "rank", "name", "role", "candidate_index",
+    "nearest_cosine_similarity", "nearest_pixel_mse",
+]].style.format({
+    "nearest_cosine_similarity": "{:.4f}",
+    "nearest_pixel_mse": "{:.5f}",
+}).hide(axis="index"))
+display(HTML('<div class="phase-note"><strong>Fase 11 completa.</strong> Diez PNG únicos, latentes y procedencia quedaron validados y respaldados en Drive.</div>'))
 '''
     ),
     md(
